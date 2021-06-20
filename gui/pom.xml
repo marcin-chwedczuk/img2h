@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>parent-project</artifactId>
+        <groupId>pl.marcinchwedczuk.img2h</groupId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>gui</artifactId>
+    <packaging>jar</packaging>
+
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>JavaFX Application</description>
+
+    <properties>
+        <extra-jvm-options-when-running-tests>
+            --add-opens javafx.graphics/com.sun.javafx.application=ALL-UNNAMED
+            --add-opens javafx.graphics/com.sun.glass.ui=ALL-UNNAMED
+
+            <!-- Needed to make module code accessible outside module e.g. in unit tests. -->
+            --add-opens pl.marcinchwedczuk.img2h.gui/pl.marcinchwedczuk.img2h.gui=ALL-UNNAMED
+            --add-opens pl.marcinchwedczuk.img2h.gui/pl.marcinchwedczuk.img2h.gui.mainwindow=ALL-UNNAMED
+        </extra-jvm-options-when-running-tests>
+    </properties>
+
+    <dependencies>
+        <!-- Other modules -->
+        <dependency>
+            <groupId>pl.marcinchwedczuk.img2h</groupId>
+            <artifactId>domain</artifactId>
+        </dependency>
+
+        <!-- External -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testfx</groupId>
+            <artifactId>testfx-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testfx</groupId>
+            <artifactId>testfx-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testfx</groupId>
+            <artifactId>openjfx-monocle</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.fxml</include>
+                    <include>**/*.css</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>nl.geodienstencentrum.maven</groupId>
+                <artifactId>sass-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>update-stylesheets</goal>
+                            <!-- SCSS Linter: Disabled because it takes too much time
+                            <goal>scss-lint</goal>
+                            -->
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <resources>
+                        <resource>
+                            <source>
+                                <directory>${project.build.sourceDirectory}</directory>
+                                <includes>
+                                    <include>**/*.scss</include>
+                                </includes>
+                            </source>
+                            <destination>${project.build.directory}/generated-resources/sass</destination>
+                        </resource>
+                    </resources>
+                    <sassOptions>
+                        <!-- See for list of all options:
+                        https://github.com/sass/ruby-sass/blob/7a50eae567260a23d3bbf4d5aaf1a76db43dec32/doc-src/SASS_REFERENCE.md#options
+                        -->
+                        <unix_newlines>true</unix_newlines>
+                        <cache>true</cache>
+                        <always_update>true</always_update>
+                        <style>:expanded</style>
+                        <debug_info>false</debug_info>
+                        <sourcemap>:none</sourcemap>
+                    </sassOptions>
+                </configuration>
+            </plugin>
+
+            <!-- Copy compiled SCSS files to output directory -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-resources-post-compile</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/generated-resources/sass</directory>
+                                    <includes>
+                                        <include>**/*.css</include>
+                                    </includes>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>pl.marcinchwedczuk.img2h.gui/pl.marcinchwedczuk.img2h.gui.App</mainClass>
+                    <options>
+                        <!-- Enable assertions -->
+                        <option>-ea</option>
+
+                        <!-- uncomment to enable debugger's "Attach to Process..." -->
+                        <!--
+                        <option>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=4444</option>
+                        -->
+                    </options>
+                    <stripDebug>false</stripDebug>
+                    <noHeaderFiles>true</noHeaderFiles>
+                    <noManPages>true</noManPages>
+                    <launcher>gui</launcher>
+                    <jlinkImageName>gui</jlinkImageName>
+                    <jlinkZipName>gui</jlinkZipName>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

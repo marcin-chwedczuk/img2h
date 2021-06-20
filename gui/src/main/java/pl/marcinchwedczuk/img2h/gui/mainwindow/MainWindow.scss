@@ -1,0 +1,13 @@
+@import 'pl/marcinchwedczuk/img2h/gui/Base';
+
+.mainWindow {
+    .vbox {
+        -fx-spacing: 20px;
+        -fx-alignment: center;
+    }
+
+    .button {
+        // Variable imported from _Base.scss
+        -fx-text-fill: $example-variable;
+    }
+}

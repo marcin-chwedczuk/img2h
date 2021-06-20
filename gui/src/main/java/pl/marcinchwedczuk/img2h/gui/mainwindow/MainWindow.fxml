@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<VBox minHeight="100" minWidth="300"
+      styleClass="mainWindow" stylesheets="@MainWindow.css"
+      xmlns="http://javafx.com/javafx/" xmlns:fx="http://javafx.com/fxml/"
+      fx:controller="pl.marcinchwedczuk.img2h.gui.mainwindow.MainWindow"
+      fx:id="mainWindow">
+    <children>
+        <Button>Click me!</Button>
+        <Label fx:id="label" />
+    </children>
+</VBox>
