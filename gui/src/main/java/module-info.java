@@ -3,6 +3,8 @@ module pl.marcinchwedczuk.img2h.gui {
 
     requires javafx.controls;
     requires javafx.fxml;
+    requires org.apache.commons.imaging;
+    requires java.desktop;
 
     exports pl.marcinchwedczuk.img2h.gui;
     exports pl.marcinchwedczuk.img2h.gui.mainwindow;
