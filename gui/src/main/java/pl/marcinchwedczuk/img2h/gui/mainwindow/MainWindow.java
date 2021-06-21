@@ -1,6 +1,7 @@
 package pl.marcinchwedczuk.img2h.gui.mainwindow;
 
 import javafx.embed.swing.SwingFXUtils;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -108,7 +109,8 @@ public class MainWindow implements Initializable {
         boolean success = false;
         if (event.getDragboard().hasFiles()) {
             // Print files
-            event.getDragboard().getFiles().forEach(file -> System.out.println(file.getAbsolutePath()));
+            File file = event.getDragboard().getFiles().get(0);
+            loadImage(file);
             success = true;
         }
         event.setDropCompleted(success);
@@ -148,17 +150,30 @@ public class MainWindow implements Initializable {
 
             Image imageFile = new Image(new ByteArrayInputStream(os.toByteArray()));*/
 
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            Imaging.writeImage(bufferedImage, os, ImageFormats.BMP, new HashMap<>());
-            os.close();
-
             Image image = SwingFXUtils.toFXImage(bufferedImage, null);
 
             originalImage.setImage(image);
             originalImage.setFitWidth(image.getWidth());
             originalImage.setFitHeight(image.getHeight());
         } catch (Exception e) {
+            UiService.errorDialog("Failure: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public void guiCrop(ActionEvent actionEvent) {
+
+    }
+
+    public void guiResize(ActionEvent actionEvent) {
+
+    }
+
+    public void guiExport(ActionEvent actionEvent) {
+
+    }
+
+    public void guiNokia5110SizePreset(ActionEvent actionEvent) {
+
     }
 }
