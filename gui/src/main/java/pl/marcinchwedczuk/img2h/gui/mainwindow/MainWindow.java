@@ -1,13 +1,15 @@
 package pl.marcinchwedczuk.img2h.gui.mainwindow;
 
-import javafx.event.ActionEvent;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -15,14 +17,12 @@ import org.apache.commons.imaging.*;
 import org.apache.commons.imaging.color.ColorConversions;
 import org.apache.commons.imaging.color.ColorHsl;
 import org.apache.commons.imaging.palette.Palette;
-import org.apache.commons.imaging.palette.SimplePalette;
-import pl.marcinchwedczuk.img2h.domain.Util;
+import pl.marcinchwedczuk.img2h.gui.waitdialog.WaitDialog;
 
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 public class MainWindow implements Initializable {
@@ -49,10 +49,17 @@ public class MainWindow implements Initializable {
     private BorderPane mainWindow;
 
     @FXML
-    private ImageView image;
+    private ImageView originalImage;
+
+    @FXML
+    private ImageView lcdImage;
+
+    @FXML
+    private ScrollPane imageContainer;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+
     }
 
     @FXML
@@ -64,54 +71,94 @@ public class MainWindow implements Initializable {
                 new File(System.getProperty("user.home")));
 
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("All Images", "*.bmp", "*.jpg", "*.jpeg", "*.png"),
-                new FileChooser.ExtensionFilter("BMP Images", "*.bmp"),
+                new FileChooser.ExtensionFilter("All Images", "*.jpg", "*.jpeg", "*.png", "*.bmp", "*.ico"),
                 new FileChooser.ExtensionFilter("JPEG Images", "*.jpg", "*.jpeg"),
-                new FileChooser.ExtensionFilter("PNG Images", "*.png"));
+                new FileChooser.ExtensionFilter("PNG Images", "*.png"),
+                new FileChooser.ExtensionFilter("BMP Images", "*.bmp"),
+                new FileChooser.ExtensionFilter("ICO Images", "*.ico")
+        );
 
         File file = fileChooser.showOpenDialog(mainWindow.getScene().getWindow());
         if (file != null) {
-            try {
-                BufferedImage bufferedImage = Imaging.getBufferedImage(file);
 
-                org.apache.commons.imaging.palette.Dithering.applyFloydSteinbergDithering(bufferedImage,
-                        new Palette() {
-                            @Override
-                            public int getPaletteIndex(int rgb) throws ImageWriteException {
-                                if (ColorConversions.convertRGBtoHSL(rgb).L < 0.50) {
-                                    return 0;
-                                }
-                                return 1;
-                            }
-
-                            @Override
-                            public int getEntry(int index) {
-                                return index == 0
-                                        ? ColorConversions.convertHSLtoRGB(ColorHsl.BLACK)
-                                        : ColorConversions.convertHSLtoRGB(ColorHsl.WHITE);
-                            }
-
-                            @Override
-                            public int length() {
-                                return 2;
-                            }
-                        });
-                ByteArrayOutputStream os = new ByteArrayOutputStream();
-                Imaging.writeImage(bufferedImage, os, ImageFormats.BMP, new HashMap<>());
-                os.close();
-
-                Image imageFile = new Image(new ByteArrayInputStream(os.toByteArray()));
-                image.setImage(imageFile);
-                image.setFitWidth(imageFile.getWidth());
-                image.setFitHeight(imageFile.getHeight());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
     }
 
     @FXML
     private void guiSaveHeader() {
 
+    }
+
+    public void guiDragOverImageContainer(DragEvent event) {
+        // On drag over if the DragBoard has files
+        if (event.getDragboard().hasFiles()) {
+            // All files on the dragboard must have an accepted extension
+            /*if (!validExtensions.containsAll(
+                    event.getDragboard().getFiles().stream()
+                            .map(file -> getExtension(file.getName()))
+                            .collect(Collectors.toList()))) { */
+
+            // Allow for both copying and moving
+            event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+        }
+        event.consume();
+    }
+
+    public void guiDragDroppedOnImageContainer(DragEvent event) {
+        boolean success = false;
+        if (event.getDragboard().hasFiles()) {
+            // Print files
+            event.getDragboard().getFiles().forEach(file -> System.out.println(file.getAbsolutePath()));
+            success = true;
+        }
+        event.setDropCompleted(success);
+        event.consume();
+    }
+
+    private void loadImage(File imageFile) {
+        try {
+            BufferedImage bufferedImage = Imaging.getBufferedImage(imageFile);
+
+            /*
+            org.apache.commons.imaging.palette.Dithering.applyFloydSteinbergDithering(bufferedImage,
+                    new Palette() {
+                        @Override
+                        public int getPaletteIndex(int rgb) throws ImageWriteException {
+                            if (ColorConversions.convertRGBtoHSL(rgb).L < 0.50) {
+                                return 0;
+                            }
+                            return 1;
+                        }
+
+                        @Override
+                        public int getEntry(int index) {
+                            return index == 0
+                                    ? ColorConversions.convertHSLtoRGB(ColorHsl.BLACK)
+                                    : ColorConversions.convertHSLtoRGB(ColorHsl.WHITE);
+                        }
+
+                        @Override
+                        public int length() {
+                            return 2;
+                        }
+                    });
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            Imaging.writeImage(bufferedImage, os, ImageFormats.BMP, new HashMap<>());
+            os.close();
+
+            Image imageFile = new Image(new ByteArrayInputStream(os.toByteArray()));*/
+
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            Imaging.writeImage(bufferedImage, os, ImageFormats.BMP, new HashMap<>());
+            os.close();
+
+            Image image = SwingFXUtils.toFXImage(bufferedImage, null);
+
+            originalImage.setImage(image);
+            originalImage.setFitWidth(image.getWidth());
+            originalImage.setFitHeight(image.getHeight());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
