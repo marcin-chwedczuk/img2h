@@ -222,7 +222,7 @@
                     <items>
                         <ScrollPane fitToHeight="true" fitToWidth="true">
                             <content>
-                                <ImageView fx:id="originalImage" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
+                                <ImageView fx:id="originalImageView" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
                             </content>
                         </ScrollPane>
                         <ScrollPane fitToHeight="true" fitToWidth="true">

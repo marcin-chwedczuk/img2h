@@ -18,16 +18,18 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import org.apache.commons.imaging.*;
+import org.apache.commons.imaging.ImageFormat;
+import org.apache.commons.imaging.ImageWriteException;
+import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.color.ColorConversions;
-import org.apache.commons.imaging.color.ColorHsl;
 import org.apache.commons.imaging.palette.Palette;
-import pl.marcinchwedczuk.img2h.gui.waitdialog.WaitDialog;
 
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -57,7 +59,7 @@ public class MainWindow implements Initializable {
     private BorderPane mainWindow;
 
     @FXML
-    private ImageView originalImage;
+    private ImageView originalImageView;
 
     @FXML
     private ImageView lcdImage;
@@ -99,6 +101,7 @@ public class MainWindow implements Initializable {
     public ChoiceBox<ExportFormat> exportFormatChoice;
 
     private FileChooser openImageDialog = setupOpenImageDialog();
+    private BufferedImage originalImage = null;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -113,7 +116,8 @@ public class MainWindow implements Initializable {
     private void guiOpenImage() {
         File file = openImageDialog.showOpenDialog(mainWindow.getScene().getWindow());
         if (file != null) {
-
+            loadImage(file);
+            runTransformation();
         }
     }
 
@@ -130,7 +134,7 @@ public class MainWindow implements Initializable {
                 if (Set.of("bmp", "ico", "jpg", "jpeg", "png").contains(extension)) {
                     event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
                 }
-           }
+            }
         }
 
         event.consume();
@@ -141,6 +145,7 @@ public class MainWindow implements Initializable {
         if (event.getDragboard().hasFiles()) {
             File file = event.getDragboard().getFiles().get(0);
             loadImage(file);
+            runTransformation();
             success = true;
         }
         event.setDropCompleted(success);
@@ -150,16 +155,16 @@ public class MainWindow implements Initializable {
     private void loadImage(File imageFile) {
         try {
             ImageFormat format = Imaging.guessFormat(imageFile);
-            BufferedImage originalImage = Imaging.getBufferedImage(imageFile);
+            originalImage = Imaging.getBufferedImage(imageFile);
 
             formatLabel.setText(format.toString());
             originalWidthLabel.setText(originalImage.getWidth() + " px");
             originalHeightLabel.setText(originalImage.getHeight() + " px");
 
             Image image = SwingFXUtils.toFXImage(originalImage, null);
-            this.originalImage.setImage(image);
-            this.originalImage.setFitWidth(image.getWidth());
-            this.originalImage.setFitHeight(image.getHeight());
+            this.originalImageView.setImage(image);
+            this.originalImageView.setFitWidth(image.getWidth());
+            this.originalImageView.setFitHeight(image.getHeight());
 
             cropDownText.setText("0");
             cropTopText.setText("0");
@@ -172,40 +177,60 @@ public class MainWindow implements Initializable {
             bwAlgoChoice.setValue(BlackWhiteAlgorithm.DITHERING);
             exportFormatChoice.setValue(ExportFormat.C_BITS_LITERAL);
 
-            /*
-            org.apache.commons.imaging.palette.Dithering.applyFloydSteinbergDithering(bufferedImage,
-                    new Palette() {
-                        @Override
-                        public int getPaletteIndex(int rgb) throws ImageWriteException {
-                            if (ColorConversions.convertRGBtoHSL(rgb).L < 0.50) {
-                                return 0;
-                            }
-                            return 1;
-                        }
-
-                        @Override
-                        public int getEntry(int index) {
-                            return index == 0
-                                    ? ColorConversions.convertHSLtoRGB(ColorHsl.BLACK)
-                                    : ColorConversions.convertHSLtoRGB(ColorHsl.WHITE);
-                        }
-
-                        @Override
-                        public int length() {
-                            return 2;
-                        }
-                    });
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            Imaging.writeImage(bufferedImage, os, ImageFormats.BMP, new HashMap<>());
-            os.close();
-
-            Image imageFile = new Image(new ByteArrayInputStream(os.toByteArray()));*/
-
 
         } catch (Exception e) {
             UiService.errorDialog("Failure: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private void runTransformation() {
+        if (originalImage == null) {
+            UiService.infoDialog("No image is loaded!");
+            return;
+        }
+
+        try {
+            BufferedImage workingCopy = clone(originalImage);
+
+            Image transformedFxImage = SwingFXUtils.toFXImage(workingCopy, null);
+            this.lcdImage.setImage(transformedFxImage);
+            this.lcdImage.setFitWidth(transformedFxImage.getWidth());
+            this.lcdImage.setFitHeight(transformedFxImage.getHeight());
+        } catch (Exception e) {
+            UiService.errorDialog("Failure: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public static BufferedImage clone(BufferedImage bufferImage) {
+        ColorModel colorModel = bufferImage.getColorModel();
+        WritableRaster raster = bufferImage.copyData(null);
+        boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
+        return new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
+    }
+
+    private void convertToBlackAndWhite(BufferedImage workingCopy) throws Exception {
+        org.apache.commons.imaging.palette.Dithering.applyFloydSteinbergDithering(workingCopy,
+                new Palette() {
+                    @Override
+                    public int getPaletteIndex(int rgb) throws ImageWriteException {
+                        if (ColorConversions.convertRGBtoHSL(rgb).L < 0.50) {
+                            return 0;
+                        }
+                        return 1;
+                    }
+
+                    @Override
+                    public int getEntry(int index) {
+                        return index == 0 ? 0x000000 : 0xffffff;
+                    }
+
+                    @Override
+                    public int length() {
+                        return 2;
+                    }
+                });
     }
 
     public void guiCrop(ActionEvent actionEvent) {
