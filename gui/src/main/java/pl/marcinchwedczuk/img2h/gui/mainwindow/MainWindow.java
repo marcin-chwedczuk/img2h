@@ -1,12 +1,16 @@
 package pl.marcinchwedczuk.img2h.gui.mainwindow;
 
+import com.google.common.io.Files;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
@@ -24,9 +28,12 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 public class MainWindow implements Initializable {
+
     public static MainWindow showOn(Stage window) {
         try {
             FXMLLoader loader = new FXMLLoader(MainWindow.class.getResource("MainWindow.fxml"));
@@ -58,28 +65,53 @@ public class MainWindow implements Initializable {
     @FXML
     private ScrollPane imageContainer;
 
+    @FXML
+    private Label originalWidthLabel;
+
+    @FXML
+    private Label originalHeightLabel;
+
+    @FXML
+    private Label formatLabel;
+
+    @FXML
+    private TextField cropDownText;
+
+    @FXML
+    private TextField cropTopText;
+
+    @FXML
+    private TextField cropLeftText;
+
+    @FXML
+    private TextField cropRightText;
+
+    @FXML
+    private TextField resizeNewWidthText;
+
+    @FXML
+    private TextField resizeNewHeightText;
+
+    @FXML
+    private ChoiceBox<BlackWhiteAlgorithm> bwAlgoChoice;
+
+    @FXML
+    public ChoiceBox<ExportFormat> exportFormatChoice;
+
+    private FileChooser openImageDialog = setupOpenImageDialog();
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        bwAlgoChoice.getItems().addAll(BlackWhiteAlgorithm.values());
+        bwAlgoChoice.setValue(BlackWhiteAlgorithm.DITHERING);
 
+        exportFormatChoice.getItems().addAll(ExportFormat.values());
+        exportFormatChoice.setValue(ExportFormat.C_BITS_LITERAL);
     }
 
     @FXML
     private void guiOpenImage() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select image...");
-
-        fileChooser.setInitialDirectory(
-                new File(System.getProperty("user.home")));
-
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("All Images", "*.jpg", "*.jpeg", "*.png", "*.bmp", "*.ico"),
-                new FileChooser.ExtensionFilter("JPEG Images", "*.jpg", "*.jpeg"),
-                new FileChooser.ExtensionFilter("PNG Images", "*.png"),
-                new FileChooser.ExtensionFilter("BMP Images", "*.bmp"),
-                new FileChooser.ExtensionFilter("ICO Images", "*.ico")
-        );
-
-        File file = fileChooser.showOpenDialog(mainWindow.getScene().getWindow());
+        File file = openImageDialog.showOpenDialog(mainWindow.getScene().getWindow());
         if (file != null) {
 
         }
@@ -91,24 +123,22 @@ public class MainWindow implements Initializable {
     }
 
     public void guiDragOverImageContainer(DragEvent event) {
-        // On drag over if the DragBoard has files
         if (event.getDragboard().hasFiles()) {
-            // All files on the dragboard must have an accepted extension
-            /*if (!validExtensions.containsAll(
-                    event.getDragboard().getFiles().stream()
-                            .map(file -> getExtension(file.getName()))
-                            .collect(Collectors.toList()))) { */
-
-            // Allow for both copying and moving
-            event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+            List<File> files = event.getDragboard().getFiles();
+            if (files.size() == 1 && files.get(0).isFile()) {
+                String extension = Files.getFileExtension(files.get(0).getName());
+                if (Set.of("bmp", "ico", "jpg", "jpeg", "png").contains(extension)) {
+                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                }
+           }
         }
+
         event.consume();
     }
 
     public void guiDragDroppedOnImageContainer(DragEvent event) {
         boolean success = false;
         if (event.getDragboard().hasFiles()) {
-            // Print files
             File file = event.getDragboard().getFiles().get(0);
             loadImage(file);
             success = true;
@@ -119,7 +149,28 @@ public class MainWindow implements Initializable {
 
     private void loadImage(File imageFile) {
         try {
-            BufferedImage bufferedImage = Imaging.getBufferedImage(imageFile);
+            ImageFormat format = Imaging.guessFormat(imageFile);
+            BufferedImage originalImage = Imaging.getBufferedImage(imageFile);
+
+            formatLabel.setText(format.toString());
+            originalWidthLabel.setText(originalImage.getWidth() + " px");
+            originalHeightLabel.setText(originalImage.getHeight() + " px");
+
+            Image image = SwingFXUtils.toFXImage(originalImage, null);
+            this.originalImage.setImage(image);
+            this.originalImage.setFitWidth(image.getWidth());
+            this.originalImage.setFitHeight(image.getHeight());
+
+            cropDownText.setText("0");
+            cropTopText.setText("0");
+            cropLeftText.setText("0");
+            cropRightText.setText("0");
+
+            resizeNewWidthText.setText(Integer.toString(originalImage.getWidth()));
+            resizeNewHeightText.setText(Integer.toString(originalImage.getHeight()));
+
+            bwAlgoChoice.setValue(BlackWhiteAlgorithm.DITHERING);
+            exportFormatChoice.setValue(ExportFormat.C_BITS_LITERAL);
 
             /*
             org.apache.commons.imaging.palette.Dithering.applyFloydSteinbergDithering(bufferedImage,
@@ -150,11 +201,7 @@ public class MainWindow implements Initializable {
 
             Image imageFile = new Image(new ByteArrayInputStream(os.toByteArray()));*/
 
-            Image image = SwingFXUtils.toFXImage(bufferedImage, null);
 
-            originalImage.setImage(image);
-            originalImage.setFitWidth(image.getWidth());
-            originalImage.setFitHeight(image.getHeight());
         } catch (Exception e) {
             UiService.errorDialog("Failure: " + e.getMessage());
             e.printStackTrace();
@@ -175,5 +222,22 @@ public class MainWindow implements Initializable {
 
     public void guiNokia5110SizePreset(ActionEvent actionEvent) {
 
+    }
+
+    private static FileChooser setupOpenImageDialog() {
+        FileChooser fileChooser = new FileChooser();
+
+        fileChooser.setTitle("Select image...");
+        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("All Images", "*.jpg", "*.jpeg", "*.png", "*.bmp", "*.ico"),
+                new FileChooser.ExtensionFilter("JPEG Images", "*.jpg", "*.jpeg"),
+                new FileChooser.ExtensionFilter("PNG Images", "*.png"),
+                new FileChooser.ExtensionFilter("BMP Images", "*.bmp"),
+                new FileChooser.ExtensionFilter("ICO Images", "*.ico")
+        );
+
+        return fileChooser;
     }
 }

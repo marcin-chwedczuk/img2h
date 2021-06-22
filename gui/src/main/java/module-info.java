@@ -7,6 +7,7 @@ module pl.marcinchwedczuk.img2h.gui {
     requires javafx.swing;
     requires org.apache.commons.imaging;
     requires java.desktop;
+    requires com.google.common;
 
     exports pl.marcinchwedczuk.img2h.gui;
     exports pl.marcinchwedczuk.img2h.gui.mainwindow;
