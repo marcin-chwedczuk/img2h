@@ -24,6 +24,7 @@ import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.color.ColorConversions;
 import org.apache.commons.imaging.palette.Palette;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
@@ -191,7 +192,13 @@ public class MainWindow implements Initializable {
         }
 
         try {
-            BufferedImage workingCopy = clone(originalImage);
+            BufferedImage workingCopy = createCopy(originalImage);
+
+            workingCopy = createResizedImage(workingCopy,
+                    Integer.parseInt(resizeNewWidthText.getText()),
+                    Integer.parseInt(resizeNewHeightText.getText()));
+
+            convertToBlackAndWhite(workingCopy);
 
             Image transformedFxImage = SwingFXUtils.toFXImage(workingCopy, null);
             this.lcdImage.setImage(transformedFxImage);
@@ -203,11 +210,22 @@ public class MainWindow implements Initializable {
         }
     }
 
-    public static BufferedImage clone(BufferedImage bufferImage) {
+    public static BufferedImage createCopy(BufferedImage bufferImage) {
         ColorModel colorModel = bufferImage.getColorModel();
         WritableRaster raster = bufferImage.copyData(null);
         boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
         return new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
+    }
+
+    public static BufferedImage createResizedImage(BufferedImage img, int newW, int newH) {
+        java.awt.Image tmp = img.getScaledInstance(newW, newH, java.awt.Image.SCALE_SMOOTH);
+        BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
+
+        Graphics2D g2d = dimg.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+
+        return dimg;
     }
 
     private void convertToBlackAndWhite(BufferedImage workingCopy) throws Exception {
@@ -234,19 +252,20 @@ public class MainWindow implements Initializable {
     }
 
     public void guiCrop(ActionEvent actionEvent) {
-
+        runTransformation();
     }
 
     public void guiResize(ActionEvent actionEvent) {
-
+        runTransformation();
     }
 
     public void guiExport(ActionEvent actionEvent) {
-
+        runTransformation();
     }
 
     public void guiNokia5110SizePreset(ActionEvent actionEvent) {
-
+        resizeNewHeightText.setText("48");
+        resizeNewWidthText.setText("84");
     }
 
     private static FileChooser setupOpenImageDialog() {
