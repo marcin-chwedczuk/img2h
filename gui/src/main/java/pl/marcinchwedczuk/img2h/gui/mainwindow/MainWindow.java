@@ -233,12 +233,7 @@ public class MainWindow implements Initializable {
     private void loadImage(File imageFile) {
         try {
             ImageFormat format = Imaging.guessFormat(imageFile);
-            try {
-                originalImage = Imaging.getBufferedImage(imageFile);
-            } catch (ImageReadException e) {
-                e.printStackTrace();
-                originalImage = ImageIO.read(imageFile);
-            }
+            originalImage = ImageIO.read(imageFile);
 
             formatLabel.setText(format.toString());
             originalWidthLabel.setText(originalImage.getWidth() + " px");
@@ -295,8 +290,10 @@ public class MainWindow implements Initializable {
                     resizeAlgorithmChoice.getValue());
 
             double threshold = bwThresholdSlider.getValue();
+            BlackWhiteAlgorithm bwAlgorithm = bwAlgoChoice.getValue();
+            convertToBlackAndBackground(workingCopy, bwAlgorithm, threshold);
+
             int backgroundColor = colorToInt(lcdImageBackgroundColorPicker.getValue());
-            convertToBlackAndBackground(workingCopy, threshold);
             workingCopy = replaceWhite(workingCopy, backgroundColor);
 
             this.transformedImage = workingCopy;
@@ -346,10 +343,24 @@ public class MainWindow implements Initializable {
                 img.getHeight() - cropTop - cropBottom);
     }
 
-    private void convertToBlackAndBackground(BufferedImage workingCopy,
+    private BufferedImage convertToBlackAndBackground(BufferedImage workingCopy,
+                                             BlackWhiteAlgorithm bwAlgorithm,
                                              double threshold) throws Exception {
         double normalizedThreshold = threshold / 100.0; // normalize [0,100] -> [0,1]
+        switch (bwAlgorithm) {
+            case DITHERING:
+                return applyDithering(workingCopy, normalizedThreshold);
 
+            case THRESHOLD:
+                return toBlackAndWhite(workingCopy, normalizedThreshold);
+
+            default:
+                throw new IllegalArgumentException("bwAlgorithm");
+        }
+    }
+
+    private BufferedImage applyDithering(BufferedImage workingCopy, double normalizedThreshold) throws ImageWriteException {
+        // image is updated in place
         org.apache.commons.imaging.palette.Dithering.applyFloydSteinbergDithering(workingCopy,
                 new Palette() {
                     @Override
@@ -370,6 +381,22 @@ public class MainWindow implements Initializable {
                         return 2;
                     }
                 });
+
+        return workingCopy;
+    }
+
+    private static BufferedImage toBlackAndWhite(BufferedImage original, double normalizedThreshold) {
+        DataBuffer db = original.getRaster().getDataBuffer();
+        for (int i = 0; i < db.getSize(); i++) {
+            int rgb = db.getElem(i);
+            if (ColorConversions.convertRGBtoHSL(rgb).L < normalizedThreshold) {
+                db.setElem(i, 0x000000);
+            }
+            else {
+                db.setElem(i, 0xffffff);
+            }
+        }
+        return original;
     }
 
     private static BufferedImage replaceWhite(BufferedImage original, int newColor) {
