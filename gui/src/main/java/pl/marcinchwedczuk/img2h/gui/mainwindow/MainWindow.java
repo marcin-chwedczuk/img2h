@@ -556,7 +556,7 @@ public class MainWindow implements Initializable {
 
     @FXML
     private void openCode() {
-        String code = Img2Code.convertBlackWhiteToHeader(transformedImage, exportFormatChoice.getValue());
+        String code = new Img2Code(transformedImage, exportFormatChoice.getValue()).convertBlackWhiteToHeader();
         CodeWindow.show(this.bwAlgoChoice.getScene().getWindow(), code);
     }
 }

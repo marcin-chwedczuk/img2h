@@ -4,7 +4,15 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 
 public class Img2Code {
-    public static String convertBlackWhiteToHeader(BufferedImage image, ExportFormat format) {
+    private final BufferedImage image;
+    private final ExportFormat format;
+
+    public Img2Code(BufferedImage image, ExportFormat format) {
+        this.image = image;
+        this.format = format;
+    }
+
+    public String convertBlackWhiteToHeader() {
         StringBuilder header = new StringBuilder();
 
         startVariableDeclaration("glcd_bmp", image, header);
@@ -13,21 +21,24 @@ public class Img2Code {
         int size = db.getSize();
         int curr = 0;
 
-        while (curr < size) {
-            if ((curr % (8*6)) == 0) {
-                header.append("\n    "); // append enter and 4 spaces
-            }
+        for (int h = 0; h < image.getHeight(); h++) {
+            header.append("\n    "); // append enter and 4 spaces
 
-            // Take 8 pixels at once
-            int bits = 0;
-            for (int i = 0; (i < 8) && (curr < size); i++) {
-                bits <<= 1;
-                bits |= (db.getElem(curr) == 0x000000) ? 1 : 0;
-                curr++;
-            }
+            for (int w = 0; w < image.getWidth(); w += 8) {
+                int maxIndex = Math.min(w + 8, image.getWidth());
 
-            append8Bits(header, bits, format);
-            header.append(", ");
+                // Take 8 pixels at once
+                int bits = 0;
+                int pos = 0x80;
+                for (int i = w; (i < maxIndex); i++) {
+                    bits |= (db.getElem(curr) == 0x000000) ? pos : 0;
+                    pos >>= 1;
+                    curr++;
+                }
+
+                append8Bits(header, bits, format);
+                header.append(", ");
+            }
         }
 
         // Remove last ', ' before closing '}'
@@ -39,7 +50,7 @@ public class Img2Code {
         return header.toString();
     }
 
-    private static void append8Bits(StringBuilder header, int bits, ExportFormat format) {
+    private void append8Bits(StringBuilder header, int bits, ExportFormat format) {
         switch (format) {
             case C_HEX_LITERAL:
                 header.append(String.format("0x%02x", bits & 0xff));
@@ -54,7 +65,7 @@ public class Img2Code {
     }
 
 
-    private static void startVariableDeclaration(String variableName, BufferedImage img, StringBuilder header) {
+    private void startVariableDeclaration(String variableName, BufferedImage img, StringBuilder header) {
         // TODO: Use #define
         header.append(String.format("static const unsigned int PROGMEM %s_WIDTH = %d;",
                 variableName.toUpperCase(), img.getWidth()));
@@ -65,7 +76,7 @@ public class Img2Code {
         header.append(String.format("static const unsigned char PROGMEM %s[] = {", variableName));
     }
 
-    private static void finishVariableDeclaration(StringBuilder header) {
+    private void finishVariableDeclaration(StringBuilder header) {
         header.append("\n};");
     }
 
