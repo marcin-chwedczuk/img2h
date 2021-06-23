@@ -197,7 +197,7 @@ public class MainWindow implements Initializable {
             List<File> files = event.getDragboard().getFiles();
             if (files.size() == 1 && files.get(0).isFile()) {
                 String extension = Files.getFileExtension(files.get(0).getName());
-                if (Set.of("bmp", "ico", "jpg", "jpeg", "png").contains(extension)) {
+                if (Set.of("bmp", "ico", "jpg", "jpeg", "png").contains(extension.toLowerCase())) {
                     event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
                 }
             }
