@@ -255,7 +255,7 @@
                         <VBox>
                             <ScrollPane fitToHeight="true" fitToWidth="true" VBox.vgrow="ALWAYS">
                                 <content>
-                                    <ImageView fx:id="lcdImage" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
+                                    <ImageView fx:id="lcdImage" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" smooth="false" />
                                 </content>
                             </ScrollPane>
                             <HBox alignment="CENTER_LEFT" spacing="4.0" VBox.vgrow="NEVER">

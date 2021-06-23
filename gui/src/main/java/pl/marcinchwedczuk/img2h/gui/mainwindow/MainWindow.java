@@ -1,6 +1,7 @@
 package pl.marcinchwedczuk.img2h.gui.mainwindow;
 
 import com.google.common.io.Files;
+import javafx.beans.binding.Bindings;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -107,8 +108,6 @@ public class MainWindow implements Initializable {
     @FXML
     public ChoiceBox<ExportFormat> exportFormatChoice;
 
-    private FileChooser openImageDialog = setupOpenImageDialog();
-    private BufferedImage originalImage = null;
 
     @FXML
     private Rectangle cropShadowTop;
@@ -128,8 +127,21 @@ public class MainWindow implements Initializable {
     @FXML
     private ColorPicker lcdImageBackgroundColorPicker;
 
+    @FXML
+    private Label lcdImageZoomLabel;
+
+    @FXML
+    private Slider lcdImageZoom;
+
+    private FileChooser openImageDialog = setupOpenImageDialog();
+    private BufferedImage originalImage = null;
+    private BufferedImage transformedImage = null;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        this.originalImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        this.transformedImage = originalImage;
+
         bwAlgoChoice.getItems().addAll(BlackWhiteAlgorithm.values());
         bwAlgoChoice.setValue(BlackWhiteAlgorithm.DITHERING);
 
@@ -138,6 +150,14 @@ public class MainWindow implements Initializable {
 
         resizeAlgorithmChoice.getItems().addAll(ResizeAlgorithm.values());
         resizeAlgorithmChoice.setValue(ResizeAlgorithm.SMOOTH);
+
+        lcdImageZoomLabel.textProperty().bind(Bindings.createStringBinding(
+                () -> String.format("%3.0f%%", lcdImageZoom.getValue()),
+                lcdImageZoom.valueProperty()));
+        lcdImageZoom.valueProperty().addListener(((observable, oldValue, newValue) -> {
+            lcdImage.setFitWidth((int)(0.5 + transformedImage.getWidth() * (double)newValue / 100.0));
+            lcdImage.setFitHeight((int)(0.5 + transformedImage.getHeight() * (double)newValue / 100.0));
+        }));
     }
 
     @FXML
@@ -241,6 +261,7 @@ public class MainWindow implements Initializable {
 
             exportFormatChoice.setValue(ExportFormat.C_BITS_LITERAL);
 
+            lcdImageZoom.setValue(100);
             lcdImageBackgroundColorPicker.setValue(Color.WHITE);
 
         } catch (Exception e) {
@@ -278,10 +299,14 @@ public class MainWindow implements Initializable {
             convertToBlackAndBackground(workingCopy, threshold);
             workingCopy = replaceWhite(workingCopy, backgroundColor);
 
+            this.transformedImage = workingCopy;
             Image transformedFxImage = SwingFXUtils.toFXImage(workingCopy, null);
+
+            double zoom = lcdImageZoom.getValue();
             this.lcdImage.setImage(transformedFxImage);
-            this.lcdImage.setFitWidth(transformedFxImage.getWidth());
-            this.lcdImage.setFitHeight(transformedFxImage.getHeight());
+            this.lcdImage.setSmooth(false);
+            this.lcdImage.setFitWidth((int)(0.5 + transformedImage.getWidth() * zoom / 100.0));
+            this.lcdImage.setFitHeight((int)(0.5 + transformedImage.getHeight() * zoom / 100.0));
         } catch (Exception e) {
             UiService.errorDialog("Failure: " + e.getMessage());
             e.printStackTrace();
@@ -426,7 +451,6 @@ public class MainWindow implements Initializable {
 
     @FXML
     private void guiMoveCropInProgress(MouseEvent mouseEvent) {
-        System.out.println("MOVE");
         if (!cropMoveInProgress) {
             return;
         }
