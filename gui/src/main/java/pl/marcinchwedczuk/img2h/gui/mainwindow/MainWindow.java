@@ -97,6 +97,9 @@ public class MainWindow implements Initializable {
     private TextField resizeNewHeightText;
 
     @FXML
+    public ChoiceBox<ResizeAlgorithm> resizeAlgorithmChoice;
+
+    @FXML
     private ChoiceBox<BlackWhiteAlgorithm> bwAlgoChoice;
 
     @FXML
@@ -124,6 +127,9 @@ public class MainWindow implements Initializable {
 
         exportFormatChoice.getItems().addAll(ExportFormat.values());
         exportFormatChoice.setValue(ExportFormat.C_BITS_LITERAL);
+
+        resizeAlgorithmChoice.getItems().addAll(ResizeAlgorithm.values());
+        resizeAlgorithmChoice.setValue(ResizeAlgorithm.SMOOTH);
     }
 
     @FXML
@@ -189,6 +195,13 @@ public class MainWindow implements Initializable {
         this.cropShadowRight.setHeight(imageHeight - cropTop - cropBottom);
     }
 
+    private void setCropBounds(int cropTop, int cropBottom, int cropLeft, int cropRight) {
+        cropTopText.setText(Integer.toString(cropTop));
+        cropDownText.setText(Integer.toString(cropBottom));
+        cropLeftText.setText(Integer.toString(cropLeft));
+        cropRightText.setText(Integer.toString(cropRight));
+    }
+
     private void loadImage(File imageFile) {
         try {
             ImageFormat format = Imaging.guessFormat(imageFile);
@@ -202,15 +215,13 @@ public class MainWindow implements Initializable {
             this.originalImageView.setImage(image);
             this.originalImageView.setFitWidth(image.getWidth());
             this.originalImageView.setFitHeight(image.getHeight());
-            setCropShadow((int)image.getHeight(), (int)image.getWidth(), 10, 10, 10, 10);
 
-            cropDownText.setText("0");
-            cropTopText.setText("0");
-            cropLeftText.setText("0");
-            cropRightText.setText("0");
+            setCropBounds(0, 0, 0, 0);
+            setCropShadow((int)image.getHeight(), (int)image.getWidth(), 0, 0, 0, 0);
 
             resizeNewWidthText.setText(Integer.toString(originalImage.getWidth()));
             resizeNewHeightText.setText(Integer.toString(originalImage.getHeight()));
+            resizeAlgorithmChoice.setValue(ResizeAlgorithm.SMOOTH);
 
             bwAlgoChoice.setValue(BlackWhiteAlgorithm.DITHERING);
             exportFormatChoice.setValue(ExportFormat.C_BITS_LITERAL);
@@ -233,7 +244,8 @@ public class MainWindow implements Initializable {
 
             workingCopy = createResizedImage(workingCopy,
                     Integer.parseInt(resizeNewWidthText.getText()),
-                    Integer.parseInt(resizeNewHeightText.getText()));
+                    Integer.parseInt(resizeNewHeightText.getText()),
+                    resizeAlgorithmChoice.getValue());
 
             convertToBlackAndWhite(workingCopy);
 
@@ -254,8 +266,8 @@ public class MainWindow implements Initializable {
         return new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
     }
 
-    public static BufferedImage createResizedImage(BufferedImage img, int newW, int newH) {
-        java.awt.Image tmp = img.getScaledInstance(newW, newH, java.awt.Image.SCALE_SMOOTH);
+    public static BufferedImage createResizedImage(BufferedImage img, int newW, int newH, ResizeAlgorithm algo) {
+        java.awt.Image tmp = img.getScaledInstance(newW, newH, algo.scalingAlgorithm());
         BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
 
         Graphics2D g2d = dimg.createGraphics();
