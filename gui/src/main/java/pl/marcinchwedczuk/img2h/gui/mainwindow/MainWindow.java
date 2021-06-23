@@ -16,6 +16,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.commons.imaging.ImageFormat;
@@ -104,6 +105,18 @@ public class MainWindow implements Initializable {
     private FileChooser openImageDialog = setupOpenImageDialog();
     private BufferedImage originalImage = null;
 
+    @FXML
+    private Rectangle cropShadowTop;
+
+    @FXML
+    private Rectangle cropShadowBottom;
+
+    @FXML
+    private Rectangle cropShadowLeft;
+
+    @FXML
+    private Rectangle cropShadowRight;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         bwAlgoChoice.getItems().addAll(BlackWhiteAlgorithm.values());
@@ -153,6 +166,29 @@ public class MainWindow implements Initializable {
         event.consume();
     }
 
+    private void setCropShadow(int imageHeight, int imageWidth,
+                               int cropTop, int cropBottom, int cropLeft, int cropRight) {
+        this.cropShadowTop.setX(0);
+        this.cropShadowTop.setY(0);
+        this.cropShadowTop.setWidth(imageWidth);
+        this.cropShadowTop.setHeight(cropTop);
+
+        this.cropShadowBottom.setX(0);
+        this.cropShadowBottom.setY(imageHeight - cropBottom);
+        this.cropShadowBottom.setWidth(imageWidth);
+        this.cropShadowBottom.setHeight(cropBottom);
+
+        this.cropShadowLeft.setX(0);
+        this.cropShadowLeft.setY(cropTop);
+        this.cropShadowLeft.setWidth(cropLeft);
+        this.cropShadowLeft.setHeight(imageHeight - cropTop - cropBottom);
+
+        this.cropShadowRight.setX(imageWidth - cropRight);
+        this.cropShadowRight.setY(cropTop);
+        this.cropShadowRight.setWidth(cropRight);
+        this.cropShadowRight.setHeight(imageHeight - cropTop - cropBottom);
+    }
+
     private void loadImage(File imageFile) {
         try {
             ImageFormat format = Imaging.guessFormat(imageFile);
@@ -166,6 +202,7 @@ public class MainWindow implements Initializable {
             this.originalImageView.setImage(image);
             this.originalImageView.setFitWidth(image.getWidth());
             this.originalImageView.setFitHeight(image.getHeight());
+            setCropShadow((int)image.getHeight(), (int)image.getWidth(), 10, 10, 10, 10);
 
             cropDownText.setText("0");
             cropTopText.setText("0");
