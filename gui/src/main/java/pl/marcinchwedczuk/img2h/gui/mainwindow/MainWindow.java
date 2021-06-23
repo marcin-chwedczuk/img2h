@@ -172,7 +172,7 @@ public class MainWindow implements Initializable {
         event.consume();
     }
 
-    private void setCropShadow(int imageHeight, int imageWidth,
+    private void setCropShadow(int imageWidth, int imageHeight,
                                int cropTop, int cropBottom, int cropLeft, int cropRight) {
         this.cropShadowTop.setX(0);
         this.cropShadowTop.setY(0);
@@ -217,7 +217,7 @@ public class MainWindow implements Initializable {
             this.originalImageView.setFitHeight(image.getHeight());
 
             setCropBounds(0, 0, 0, 0);
-            setCropShadow((int)image.getHeight(), (int)image.getWidth(), 0, 0, 0, 0);
+            setCropShadow(originalImage.getWidth(), originalImage.getHeight(), 0, 0, 0, 0);
 
             resizeNewWidthText.setText(Integer.toString(originalImage.getWidth()));
             resizeNewHeightText.setText(Integer.toString(originalImage.getHeight()));
@@ -241,6 +241,16 @@ public class MainWindow implements Initializable {
 
         try {
             BufferedImage workingCopy = createCopy(originalImage);
+
+            int
+                    cropTop = Integer.parseInt(cropTopText.getText()),
+                    cropBottom = Integer.parseInt(cropDownText.getText()),
+                    cropLeft = Integer.parseInt(cropLeftText.getText()),
+                    cropRight = Integer.parseInt(cropRightText.getText());
+            workingCopy = createCroppedImage(workingCopy, cropTop, cropBottom, cropLeft, cropRight);
+            setCropShadow(
+                    originalImage.getWidth(), originalImage.getHeight(),
+                    cropTop, cropBottom, cropLeft, cropRight);
 
             workingCopy = createResizedImage(workingCopy,
                     Integer.parseInt(resizeNewWidthText.getText()),
@@ -275,6 +285,14 @@ public class MainWindow implements Initializable {
         g2d.dispose();
 
         return dimg;
+    }
+
+    public static BufferedImage createCroppedImage(BufferedImage img, int cropTop, int cropBottom, int cropLeft, int cropRight) {
+        return img.getSubimage(
+                cropLeft,
+                cropTop,
+                img.getWidth() - cropLeft - cropRight,
+                img.getHeight() - cropTop - cropBottom);
     }
 
     private void convertToBlackAndWhite(BufferedImage workingCopy) throws Exception {
