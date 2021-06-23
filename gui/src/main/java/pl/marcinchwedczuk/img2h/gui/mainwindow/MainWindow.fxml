@@ -223,7 +223,7 @@
                                             </AnchorPane>
                                             <AnchorPane GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
                                                 <children>
-                                                    <Button layoutX="-6.0" layoutY="-12.0" mnemonicParsing="false" onAction="#guiExport" text="Open code..." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                                    <Button layoutX="-6.0" layoutY="-12.0" mnemonicParsing="false" onAction="#openCode" text="Open code..." AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                                                 </children>
                                                 <padding>
                                                     <Insets top="10.0" />

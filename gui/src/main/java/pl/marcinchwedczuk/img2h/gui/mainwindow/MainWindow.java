@@ -4,7 +4,6 @@ import com.google.common.io.Files;
 import javafx.beans.binding.Bindings;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -24,11 +23,11 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.commons.imaging.ImageFormat;
-import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.ImageWriteException;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.color.ColorConversions;
 import org.apache.commons.imaging.palette.Palette;
+import pl.marcinchwedczuk.img2h.gui.codewindow.CodeWindow;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -546,11 +545,18 @@ public class MainWindow implements Initializable {
     }
 
     @FXML
-    private void guiMoveCropStop(MouseEvent mouseEvent) {
+    private void guiMoveCropStop() {
         cropMoveInProgress = false;
     }
 
-    public void guiLcdBackgroundChanged(ActionEvent actionEvent) {
+    @FXML
+    private void guiLcdBackgroundChanged() {
         runTransformation();
+    }
+
+    @FXML
+    private void openCode() {
+        String code = Img2Code.convertBlackWhiteToHeader(transformedImage, exportFormatChoice.getValue());
+        CodeWindow.show(this.bwAlgoChoice.getScene().getWindow(), code);
     }
 }
