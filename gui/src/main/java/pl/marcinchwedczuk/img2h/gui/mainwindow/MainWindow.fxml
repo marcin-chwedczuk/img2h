@@ -176,11 +176,23 @@
                                         </columnConstraints>
                                         <rowConstraints>
                                             <RowConstraints minHeight="10.0" vgrow="NEVER" />
+                                            <RowConstraints minHeight="10.0" valignment="TOP" vgrow="NEVER" />
                                             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                 <RowConstraints minHeight="10.0" vgrow="NEVER" />
                                         </rowConstraints>
                                         <children>
                                             <Label text="Algorithm:" />
                                             <ChoiceBox fx:id="bwAlgoChoice" prefWidth="150.0" GridPane.columnIndex="1" />
+                                            <Label text="Threshold:" GridPane.rowIndex="1" />
+                                            <Slider fx:id="bwThresholdSlider" majorTickUnit="10.0" max="99.0" min="1.0" minorTickCount="5" showTickMarks="true" value="50.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                 <AnchorPane GridPane.columnSpan="2147483647" GridPane.rowIndex="3">
+                                    <children>
+                                       <Button layoutX="-6.0" layoutY="-12.0" mnemonicParsing="false" onAction="#guiResize" text="Refresh" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                    </children>
+                                    <padding>
+                                       <Insets top="10.0" />
+                                    </padding>
+                                 </AnchorPane>
                                         </children>
                                     </GridPane>
                                 </content>
@@ -248,7 +260,7 @@
                             </ScrollPane>
                             <HBox alignment="CENTER_LEFT" spacing="4.0" VBox.vgrow="NEVER">
                         <Label text="Background color:" />
-                        <ColorPicker fx:id="lcdImageBackgroundColorPicker" />
+                        <ColorPicker fx:id="lcdImageBackgroundColorPicker" onAction="#guiLcdBackgroundChanged" />
                         <Separator orientation="VERTICAL" />
                         <Label text="Zoom:" />
                         <Slider fx:id="lcdImageZoom" blockIncrement="50.0" majorTickUnit="50.0" max="500.0" min="50.0" showTickMarks="true" snapToTicks="true" value="100.0" />

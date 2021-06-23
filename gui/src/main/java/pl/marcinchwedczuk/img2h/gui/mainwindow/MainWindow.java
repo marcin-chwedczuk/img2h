@@ -7,7 +7,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
-import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.*;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
@@ -17,6 +17,7 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -29,9 +30,7 @@ import org.apache.commons.imaging.palette.Palette;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.WritableRaster;
+import java.awt.image.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -48,7 +47,7 @@ public class MainWindow implements Initializable {
             Scene scene = new Scene(loader.load());
             MainWindow controller = (MainWindow) loader.getController();
 
-            window.setTitle("Main Window");
+            window.setTitle("img2h");
             window.setScene(scene);
             window.setResizable(true);
 
@@ -122,6 +121,12 @@ public class MainWindow implements Initializable {
 
     @FXML
     private Rectangle cropShadowRight;
+
+    @FXML
+    private Slider bwThresholdSlider;
+
+    @FXML
+    private ColorPicker lcdImageBackgroundColorPicker;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -232,8 +237,11 @@ public class MainWindow implements Initializable {
             resizeAlgorithmChoice.setValue(ResizeAlgorithm.SMOOTH);
 
             bwAlgoChoice.setValue(BlackWhiteAlgorithm.DITHERING);
+            bwThresholdSlider.setValue(50.0);
+
             exportFormatChoice.setValue(ExportFormat.C_BITS_LITERAL);
 
+            lcdImageBackgroundColorPicker.setValue(Color.WHITE);
 
         } catch (Exception e) {
             UiService.errorDialog("Failure: " + e.getMessage());
@@ -265,7 +273,10 @@ public class MainWindow implements Initializable {
                     Integer.parseInt(resizeNewHeightText.getText()),
                     resizeAlgorithmChoice.getValue());
 
-            convertToBlackAndWhite(workingCopy);
+            double threshold = bwThresholdSlider.getValue();
+            int backgroundColor = colorToInt(lcdImageBackgroundColorPicker.getValue());
+            convertToBlackAndBackground(workingCopy, threshold);
+            workingCopy = replaceWhite(workingCopy, backgroundColor);
 
             Image transformedFxImage = SwingFXUtils.toFXImage(workingCopy, null);
             this.lcdImage.setImage(transformedFxImage);
@@ -275,6 +286,13 @@ public class MainWindow implements Initializable {
             UiService.errorDialog("Failure: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private static int colorToInt(Color c) {
+        int r = (int) Math.round(c.getRed() * 255);
+        int g = (int) Math.round(c.getGreen() * 255);
+        int b = (int) Math.round(c.getBlue() * 255);
+        return (r << 16) | (g << 8) | b;
     }
 
     public static BufferedImage createCopy(BufferedImage bufferImage) {
@@ -303,12 +321,15 @@ public class MainWindow implements Initializable {
                 img.getHeight() - cropTop - cropBottom);
     }
 
-    private void convertToBlackAndWhite(BufferedImage workingCopy) throws Exception {
+    private void convertToBlackAndBackground(BufferedImage workingCopy,
+                                             double threshold) throws Exception {
+        double normalizedThreshold = threshold / 100.0; // normalize [0,100] -> [0,1]
+
         org.apache.commons.imaging.palette.Dithering.applyFloydSteinbergDithering(workingCopy,
                 new Palette() {
                     @Override
                     public int getPaletteIndex(int rgb) throws ImageWriteException {
-                        if (ColorConversions.convertRGBtoHSL(rgb).L < 0.50) {
+                        if (ColorConversions.convertRGBtoHSL(rgb).L < normalizedThreshold) {
                             return 0;
                         }
                         return 1;
@@ -324,6 +345,17 @@ public class MainWindow implements Initializable {
                         return 2;
                     }
                 });
+    }
+
+    private static BufferedImage replaceWhite(BufferedImage original, int newColor) {
+        DataBuffer db = original.getRaster().getDataBuffer();
+        for (int i = 0; i < db.getSize(); i++) {
+            int rgb = db.getElem(i);
+            if (rgb != 0) {
+                db.setElem(i, newColor);
+            }
+        }
+        return original;
     }
 
     public void guiCrop(ActionEvent actionEvent) {
@@ -433,5 +465,9 @@ public class MainWindow implements Initializable {
     @FXML
     private void guiMoveCropStop(MouseEvent mouseEvent) {
         cropMoveInProgress = false;
+    }
+
+    public void guiLcdBackgroundChanged(ActionEvent actionEvent) {
+        runTransformation();
     }
 }
