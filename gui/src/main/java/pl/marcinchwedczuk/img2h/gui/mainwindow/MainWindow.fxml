@@ -231,7 +231,7 @@
                     <items>
                         <ScrollPane fitToHeight="true" fitToWidth="true">
                             <content>
-                                <Group>
+                                <Group onMouseDragged="#guiMoveCropInProgress" onMousePressed="#guiMoveCropStart" onMouseReleased="#guiMoveCropStop">
                                     <ImageView fx:id="originalImageView" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
                                     <Rectangle fx:id="cropShadowTop" blendMode="MULTIPLY" fill="#7a7a7a" height="0.0" mouseTransparent="true" width="0.0" />
                                     <Rectangle fx:id="cropShadowBottom" blendMode="MULTIPLY" fill="#7a7a7a" height="0.0" mouseTransparent="true" width="0.0" />

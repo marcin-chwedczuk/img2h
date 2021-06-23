@@ -14,6 +14,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
@@ -385,5 +386,52 @@ public class MainWindow implements Initializable {
         );
 
         return fileChooser;
+    }
+
+    private int cropMoveTop, cropMoveBottom, cropMoveLeft, cropMoveRight;
+    private int cropMoveStartX, cropMoveStartY;
+    private boolean cropMoveInProgress = false;
+
+    @FXML
+    private void guiMoveCropInProgress(MouseEvent mouseEvent) {
+        System.out.println("MOVE");
+        if (!cropMoveInProgress) {
+            return;
+        }
+
+        int deltaX = (int)mouseEvent.getX() - cropMoveStartX;
+        int deltaY = (int)mouseEvent.getY() - cropMoveStartY;
+        deltaX = clamp(deltaX, -cropMoveLeft, cropMoveRight);
+        deltaY = clamp(deltaY, -cropMoveTop, cropMoveBottom);
+
+        setCropBounds(cropMoveTop + deltaY, cropMoveBottom - deltaY,
+                cropMoveLeft + deltaX, cropMoveRight - deltaX);
+
+        setCropShadow(originalImage.getWidth(), originalImage.getHeight(),
+                cropMoveTop + deltaY, cropMoveBottom - deltaY,
+                cropMoveLeft + deltaX, cropMoveRight - deltaX);
+    }
+
+    private int clamp(int value, int min, int max) {
+        return value < min ? min :
+               value > max ? max :
+               value;
+    }
+
+    @FXML
+    private void guiMoveCropStart(MouseEvent mouseEvent) {
+        cropMoveInProgress = true;
+        cropMoveStartX = (int)mouseEvent.getX();
+        cropMoveStartY = (int)mouseEvent.getY();
+
+        cropMoveTop = Integer.parseInt(cropTopText.getText());
+        cropMoveBottom = Integer.parseInt(cropDownText.getText());
+        cropMoveLeft = Integer.parseInt(cropLeftText.getText());
+        cropMoveRight = Integer.parseInt(cropRightText.getText());
+    }
+
+    @FXML
+    private void guiMoveCropStop(MouseEvent mouseEvent) {
+        cropMoveInProgress = false;
     }
 }
