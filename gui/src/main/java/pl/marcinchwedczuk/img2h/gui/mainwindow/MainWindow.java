@@ -4,6 +4,7 @@ import com.google.common.io.Files;
 import javafx.beans.binding.Bindings;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -35,6 +36,7 @@ import java.awt.image.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -133,6 +135,9 @@ public class MainWindow implements Initializable {
     @FXML
     private Slider lcdImageZoom;
 
+    private final DebouncingEventHandler<ResizeRequestedEvent> resizeLcdImageCrisp =
+            new DebouncingEventHandler<>(Duration.ofSeconds(1), this::resizeLcdImageCrisp);
+
     private FileChooser openImageDialog = setupOpenImageDialog();
     private BufferedImage originalImage = null;
     private BufferedImage transformedImage = null;
@@ -157,7 +162,21 @@ public class MainWindow implements Initializable {
         lcdImageZoom.valueProperty().addListener(((observable, oldValue, newValue) -> {
             lcdImage.setFitWidth((int)(0.5 + transformedImage.getWidth() * (double)newValue / 100.0));
             lcdImage.setFitHeight((int)(0.5 + transformedImage.getHeight() * (double)newValue / 100.0));
+
+            resizeLcdImageCrisp.handle(new ResizeRequestedEvent((double)newValue));
         }));
+    }
+
+    private void resizeLcdImageCrisp(ResizeRequestedEvent event) {
+        BufferedImage scaled = createResizedImagePixelized(transformedImage,
+            (int)(0.5 + transformedImage.getWidth() * event.zoom / 100.0),
+            (int)(0.5 + transformedImage.getHeight() * event.zoom / 100.0));
+
+        Image transformedFxImage = SwingFXUtils.toFXImage(scaled, null);
+        this.lcdImage.setImage(transformedFxImage);
+
+        this.lcdImage.setFitWidth(transformedFxImage.getWidth());
+        this.lcdImage.setFitHeight(transformedFxImage.getHeight());
     }
 
     @FXML
@@ -329,7 +348,20 @@ public class MainWindow implements Initializable {
         BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
 
         Graphics2D g2d = dimg.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+
+        return dimg;
+    }
+
+    public static BufferedImage createResizedImagePixelized(BufferedImage img, int newW, int newH) {
+        BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
+
+        Graphics2D g2d = dimg.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+        g2d.drawImage(img, 0, 0, newW, newH, null);
         g2d.dispose();
 
         return dimg;
