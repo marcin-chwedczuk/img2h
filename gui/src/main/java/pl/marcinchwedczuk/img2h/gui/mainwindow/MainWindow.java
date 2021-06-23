@@ -20,11 +20,13 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.commons.imaging.ImageFormat;
+import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.ImageWriteException;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.color.ColorConversions;
 import org.apache.commons.imaging.palette.Palette;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -205,7 +207,12 @@ public class MainWindow implements Initializable {
     private void loadImage(File imageFile) {
         try {
             ImageFormat format = Imaging.guessFormat(imageFile);
-            originalImage = Imaging.getBufferedImage(imageFile);
+            try {
+                originalImage = Imaging.getBufferedImage(imageFile);
+            } catch (ImageReadException e) {
+                e.printStackTrace();
+                originalImage = ImageIO.read(imageFile);
+            }
 
             formatLabel.setText(format.toString());
             originalWidthLabel.setText(originalImage.getWidth() + " px");
@@ -331,8 +338,36 @@ public class MainWindow implements Initializable {
     }
 
     public void guiNokia5110SizePreset(ActionEvent actionEvent) {
-        resizeNewHeightText.setText("48");
-        resizeNewWidthText.setText("84");
+        int height = 48, width = 84;
+        resizeNewWidthText.setText(Integer.toString(width));
+        resizeNewHeightText.setText(Integer.toString(height));
+        cropToAspectRatio(width, height);
+    }
+
+    private void cropToAspectRatio(int aspectWidth, int aspectHeight) {
+        double requestedAspect = (double)aspectHeight / aspectWidth;
+        double actualAspect = (double)originalImage.getHeight() / originalImage.getWidth();
+
+        if (actualAspect >= requestedAspect) {
+            // image higher than expected
+            int newWidth = originalImage.getWidth();
+            int newHeight = (int)(requestedAspect * newWidth + 0.5);
+            int cropTop = (originalImage.getHeight() - newHeight) / 2;
+            int cropBottom = originalImage.getHeight() - newHeight - cropTop;
+            setCropBounds(cropTop, cropBottom, 0, 0);
+            setCropShadow(originalImage.getWidth(), originalImage.getHeight(),
+                    cropTop, cropBottom, 0, 0);
+        }
+        else {
+            // image wider than expected
+            int newHeight = originalImage.getHeight();
+            int newWidth = (int)(newHeight * 1.0 / requestedAspect);
+            int cropLeft = (originalImage.getWidth() - newWidth) / 2;
+            int cropRight = originalImage.getWidth() - newWidth - cropLeft;
+            setCropBounds(0, 0, cropLeft, cropRight);
+            setCropShadow(originalImage.getWidth(), originalImage.getHeight(),
+                    0, 0, cropLeft, cropRight);
+        }
     }
 
     private static FileChooser setupOpenImageDialog() {
