@@ -1,4 +1,4 @@
-# JavaFX Opinionated Application Template
+# img2h (Image to C Header)
 
 ![Build Status](https://github.com/marcin-chwedczuk/img2h/actions/workflows/ci.yaml/badge.svg)
 
