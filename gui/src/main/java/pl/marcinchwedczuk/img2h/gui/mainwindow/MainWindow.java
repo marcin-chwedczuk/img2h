@@ -348,6 +348,11 @@ public class MainWindow implements Initializable {
 
         Graphics2D g2d = dimg.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+
+        // Notice that we drop transparency here
+        g2d.setColor(java.awt.Color.WHITE);
+        g2d.fillRect(0, 0, newW, newH);
+
         g2d.drawImage(tmp, 0, 0, null);
         g2d.dispose();
 
