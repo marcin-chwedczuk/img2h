@@ -34,25 +34,25 @@
     <top>
         <MenuBar BorderPane.alignment="CENTER">
             <menus>
-                <Menu mnemonicParsing="false" text="File">
+                <Menu text="_File">
                     <items>
-                        <MenuItem mnemonicParsing="false" onAction="#guiOpenImage" text="Open Image...">
-                            <accelerator>
-                                <KeyCodeCombination alt="UP" code="O" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
-                            </accelerator>
+                        <MenuItem onAction="#guiOpenImage" text="_Open Image...">
+                     <accelerator>
+                        <KeyCodeCombination alt="UP" code="O" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator>
                         </MenuItem>
-                        <MenuItem mnemonicParsing="false" onAction="#guiSaveHeader" text="Save Header...">
-                            <accelerator>
-                                <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
-                            </accelerator>
+                        <MenuItem onAction="#guiSaveHeader" text="_Save Header...">
+                     <accelerator>
+                        <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                     </accelerator>
                         </MenuItem>
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem mnemonicParsing="false" text="Close" />
+                        <MenuItem text="E_xit" onAction="#guiClose" />
                     </items>
                 </Menu>
-                <Menu mnemonicParsing="false" text="Help">
+                <Menu text="_Help">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="About..." />
+                        <MenuItem onAction="#guiShowAbout" text="_About..." />
                     </items>
                 </Menu>
             </menus>

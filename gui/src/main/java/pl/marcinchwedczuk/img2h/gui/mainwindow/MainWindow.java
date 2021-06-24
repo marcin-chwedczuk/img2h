@@ -27,7 +27,13 @@ import org.apache.commons.imaging.ImageWriteException;
 import org.apache.commons.imaging.Imaging;
 import org.apache.commons.imaging.color.ColorConversions;
 import org.apache.commons.imaging.palette.Palette;
+import pl.marcinchwedczuk.img2h.gui.UiService;
+import pl.marcinchwedczuk.img2h.gui.aboutdialog.AboutDialog;
 import pl.marcinchwedczuk.img2h.gui.codewindow.CodeWindow;
+import pl.marcinchwedczuk.img2h.gui.logic.BlackWhiteAlgorithm;
+import pl.marcinchwedczuk.img2h.gui.logic.ExportFormat;
+import pl.marcinchwedczuk.img2h.gui.logic.Img2Code;
+import pl.marcinchwedczuk.img2h.gui.logic.ResizeAlgorithm;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -563,5 +569,15 @@ public class MainWindow implements Initializable {
     private void openCode() {
         String code = new Img2Code(transformedImage, exportFormatChoice.getValue()).convertBlackWhiteToHeader();
         CodeWindow.show(this.bwAlgoChoice.getScene().getWindow(), code);
+    }
+
+    @FXML
+    private void guiShowAbout() {
+        AboutDialog.show(this.bwAlgoChoice.getScene().getWindow());
+    }
+
+    @FXML
+    private void guiClose() {
+        ((Stage)this.bwAlgoChoice.getScene().getWindow()).close();
     }
 }

@@ -1,4 +1,4 @@
-package pl.marcinchwedczuk.img2h.gui.mainwindow;
+package pl.marcinchwedczuk.img2h.gui;
 
 import javafx.scene.control.Alert;
 
@@ -13,7 +13,7 @@ public class UiService {
     }
 
     public static void errorDialog(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION, message);
+        Alert alert = new Alert(Alert.AlertType.ERROR, message);
         alert.setTitle("ERROR");
         alert.setContentText(message);
         // ID for tests

@@ -1,4 +1,4 @@
-package pl.marcinchwedczuk.img2h.gui.mainwindow;
+package pl.marcinchwedczuk.img2h.gui.logic;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
