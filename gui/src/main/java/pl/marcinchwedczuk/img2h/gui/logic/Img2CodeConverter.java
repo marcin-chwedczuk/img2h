@@ -12,7 +12,7 @@ public class Img2CodeConverter {
         this.format = format;
     }
 
-    public String convertBlackWhiteToHeader() {
+    public String convertImageToHeader() {
         StringBuilder header = new StringBuilder();
 
         startVariableDeclaration("glcd_bmp", image, header);

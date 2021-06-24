@@ -1,6 +1,6 @@
 package pl.marcinchwedczuk.img2h.gui.mainwindow;
 
-import com.google.common.io.Files;
+import com.google.common.base.Charsets;
 import javafx.beans.binding.Bindings;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
@@ -34,6 +34,9 @@ import java.awt.image.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -133,10 +136,12 @@ public class MainWindow implements Initializable {
     @FXML
     private Slider lcdImageZoom;
 
+    private final FileChooser openImageFileChooser = FileChoosers.newOpenImageFileChooser();
+    private final FileChooser saveHeaderFileChooser = FileChoosers.newSaveHeaderFileChooser();
+
     private final DebouncingEventHandler<ResizeRequestedEvent> resizeLcdImageCrisp =
             new DebouncingEventHandler<>(Duration.ofSeconds(1), this::resizeLcdImageCrisp);
 
-    private FileChooser openImageDialog = FileChoosers.createOpenImageDialog();
     private BufferedImage originalImage = null;
     private BufferedImage transformedImage = null;
 
@@ -179,7 +184,7 @@ public class MainWindow implements Initializable {
 
     @FXML
     private void guiOpenImage() {
-        File file = openImageDialog.showOpenDialog(mainWindow.getScene().getWindow());
+        File file = openImageFileChooser.showOpenDialog(thisWindow());
         if (file != null) {
             loadImage(file);
             runTransformation();
@@ -187,15 +192,20 @@ public class MainWindow implements Initializable {
     }
 
     @FXML
-    private void guiSaveHeader() {
-
+    private void guiSaveHeader() throws IOException {
+        File headerFile = saveHeaderFileChooser.showSaveDialog(thisWindow());
+        if (headerFile != null) {
+            String header = convertImageToHeader();
+            Files.writeString(headerFile.toPath(), header,
+                    StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+        }
     }
 
     public void guiDragOverImageContainer(DragEvent event) {
         if (event.getDragboard().hasFiles()) {
             List<File> files = event.getDragboard().getFiles();
             if (files.size() == 1 && files.get(0).isFile()) {
-                String extension = Files.getFileExtension(files.get(0).getName());
+                String extension = com.google.common.io.Files.getFileExtension(files.get(0).getName());
                 if (Set.of("bmp", "ico", "jpg", "jpeg", "png").contains(extension.toLowerCase())) {
                     event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
                 }
@@ -419,17 +429,27 @@ public class MainWindow implements Initializable {
 
     @FXML
     private void openCode() {
-        String code = new Img2CodeConverter(transformedImage, exportFormatChoice.getValue()).convertBlackWhiteToHeader();
-        CodeWindow.show(this.bwAlgoChoice.getScene().getWindow(), code);
+        String code = convertImageToHeader();
+        CodeWindow.show(thisWindow(), code);
     }
 
     @FXML
     private void guiShowAbout() {
-        AboutDialog.show(this.bwAlgoChoice.getScene().getWindow());
+        AboutDialog.show(thisWindow());
     }
 
     @FXML
     private void guiClose() {
-        ((Stage)this.bwAlgoChoice.getScene().getWindow()).close();
+        thisWindow().close();
+    }
+
+    private Stage thisWindow() {
+        return (Stage)this.bwAlgoChoice.getScene().getWindow();
+    }
+
+    private String convertImageToHeader() {
+        String code = new Img2CodeConverter(transformedImage, exportFormatChoice.getValue())
+                        .convertImageToHeader();
+        return code;
     }
 }
