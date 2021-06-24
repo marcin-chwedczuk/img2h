@@ -26,11 +26,6 @@
     </properties>
 
     <dependencies>
-        <!-- Other modules -->
-        <dependency>
-            <groupId>pl.marcinchwedczuk.img2h</groupId>
-            <artifactId>domain</artifactId>
-        </dependency>
 
         <!-- External -->
         <dependency>

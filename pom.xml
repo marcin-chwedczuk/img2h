@@ -13,7 +13,6 @@
 
     <modules>
         <module>gui</module>
-        <module>domain</module>
     </modules>
 
     <properties>
@@ -62,11 +61,6 @@
            <dependency>
                 <groupId>pl.marcinchwedczuk.img2h</groupId>
                 <artifactId>gui</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>pl.marcinchwedczuk.img2h</groupId>
-                <artifactId>domain</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -143,12 +137,6 @@
                 <groupId>org.testfx</groupId>
                 <artifactId>openjfx-monocle</artifactId>
                 <version>${openjfx-monocle.version}</version>
-            </dependency>
-            <dependency>
-                <!-- Needed for screenshot in TestFX -->
-                <groupId>org.openjfx</groupId>
-                <artifactId>javafx-swing</artifactId>
-                <version>${javafx.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

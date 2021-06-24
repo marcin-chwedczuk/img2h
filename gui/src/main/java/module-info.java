@@ -1,13 +1,11 @@
 module pl.marcinchwedczuk.img2h.gui {
-    requires pl.marcinchwedczuk.img2h.domain;
-
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.graphics;
     requires javafx.swing;
-    requires org.apache.commons.imaging;
     requires java.desktop;
     requires com.google.common;
+    requires org.apache.commons.imaging;
 
     exports pl.marcinchwedczuk.img2h.gui;
     exports pl.marcinchwedczuk.img2h.gui.mainwindow;
