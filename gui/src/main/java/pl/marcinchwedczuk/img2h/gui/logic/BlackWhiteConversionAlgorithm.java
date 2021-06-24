@@ -1,6 +1,6 @@
 package pl.marcinchwedczuk.img2h.gui.logic;
 
-public enum BlackWhiteAlgorithm {
+public enum BlackWhiteConversionAlgorithm {
     THRESHOLD,
     DITHERING
 }

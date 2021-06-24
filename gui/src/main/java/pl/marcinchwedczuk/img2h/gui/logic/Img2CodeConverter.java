@@ -3,11 +3,11 @@ package pl.marcinchwedczuk.img2h.gui.logic;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 
-public class Img2Code {
+public class Img2CodeConverter {
     private final BufferedImage image;
     private final ExportFormat format;
 
-    public Img2Code(BufferedImage image, ExportFormat format) {
+    public Img2CodeConverter(BufferedImage image, ExportFormat format) {
         this.image = image;
         this.format = format;
     }

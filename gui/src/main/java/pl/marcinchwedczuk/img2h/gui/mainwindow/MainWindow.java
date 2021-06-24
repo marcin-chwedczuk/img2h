@@ -23,20 +23,13 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.commons.imaging.ImageFormat;
-import org.apache.commons.imaging.ImageWriteException;
 import org.apache.commons.imaging.Imaging;
-import org.apache.commons.imaging.color.ColorConversions;
-import org.apache.commons.imaging.palette.Palette;
 import pl.marcinchwedczuk.img2h.gui.UiService;
 import pl.marcinchwedczuk.img2h.gui.aboutdialog.AboutDialog;
 import pl.marcinchwedczuk.img2h.gui.codewindow.CodeWindow;
-import pl.marcinchwedczuk.img2h.gui.logic.BlackWhiteAlgorithm;
-import pl.marcinchwedczuk.img2h.gui.logic.ExportFormat;
-import pl.marcinchwedczuk.img2h.gui.logic.Img2Code;
-import pl.marcinchwedczuk.img2h.gui.logic.ResizeAlgorithm;
+import pl.marcinchwedczuk.img2h.gui.logic.*;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.*;
 import java.io.File;
 import java.io.IOException;
@@ -110,7 +103,7 @@ public class MainWindow implements Initializable {
     public ChoiceBox<ResizeAlgorithm> resizeAlgorithmChoice;
 
     @FXML
-    private ChoiceBox<BlackWhiteAlgorithm> bwAlgoChoice;
+    private ChoiceBox<BlackWhiteConversionAlgorithm> bwAlgoChoice;
 
     @FXML
     public ChoiceBox<ExportFormat> exportFormatChoice;
@@ -143,7 +136,7 @@ public class MainWindow implements Initializable {
     private final DebouncingEventHandler<ResizeRequestedEvent> resizeLcdImageCrisp =
             new DebouncingEventHandler<>(Duration.ofSeconds(1), this::resizeLcdImageCrisp);
 
-    private FileChooser openImageDialog = setupOpenImageDialog();
+    private FileChooser openImageDialog = FileChoosers.createOpenImageDialog();
     private BufferedImage originalImage = null;
     private BufferedImage transformedImage = null;
 
@@ -152,8 +145,8 @@ public class MainWindow implements Initializable {
         this.originalImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
         this.transformedImage = originalImage;
 
-        bwAlgoChoice.getItems().addAll(BlackWhiteAlgorithm.values());
-        bwAlgoChoice.setValue(BlackWhiteAlgorithm.DITHERING);
+        bwAlgoChoice.getItems().addAll(BlackWhiteConversionAlgorithm.values());
+        bwAlgoChoice.setValue(BlackWhiteConversionAlgorithm.DITHERING);
 
         exportFormatChoice.getItems().addAll(ExportFormat.values());
         exportFormatChoice.setValue(ExportFormat.C_BITS_LITERAL);
@@ -173,7 +166,7 @@ public class MainWindow implements Initializable {
     }
 
     private void resizeLcdImageCrisp(ResizeRequestedEvent event) {
-        BufferedImage scaled = createResizedImagePixelized(transformedImage,
+        BufferedImage scaled = BuffImageUtils.resizeImageWithoutAntialiasing(transformedImage,
             (int)(0.5 + transformedImage.getWidth() * event.zoom / 100.0),
             (int)(0.5 + transformedImage.getHeight() * event.zoom / 100.0));
 
@@ -275,7 +268,7 @@ public class MainWindow implements Initializable {
             resizeNewHeightText.setText(Integer.toString(originalImage.getHeight()));
             resizeAlgorithmChoice.setValue(ResizeAlgorithm.SMOOTH);
 
-            bwAlgoChoice.setValue(BlackWhiteAlgorithm.DITHERING);
+            bwAlgoChoice.setValue(BlackWhiteConversionAlgorithm.DITHERING);
             bwThresholdSlider.setValue(50.0);
 
             exportFormatChoice.setValue(ExportFormat.C_BITS_LITERAL);
@@ -296,29 +289,29 @@ public class MainWindow implements Initializable {
         }
 
         try {
-            BufferedImage workingCopy = createCopy(originalImage);
+            BufferedImage workingCopy = BuffImageUtils.copy(originalImage);
 
             int
                     cropTop = Integer.parseInt(cropTopText.getText()),
                     cropBottom = Integer.parseInt(cropDownText.getText()),
                     cropLeft = Integer.parseInt(cropLeftText.getText()),
                     cropRight = Integer.parseInt(cropRightText.getText());
-            workingCopy = createCroppedImage(workingCopy, cropTop, cropBottom, cropLeft, cropRight);
+            workingCopy = BuffImageUtils.cropImage(workingCopy, cropTop, cropBottom, cropLeft, cropRight);
             setCropShadow(
                     originalImage.getWidth(), originalImage.getHeight(),
                     cropTop, cropBottom, cropLeft, cropRight);
 
-            workingCopy = createResizedImage(workingCopy,
+            workingCopy = BuffImageUtils.resizedImage(workingCopy,
                     Integer.parseInt(resizeNewWidthText.getText()),
                     Integer.parseInt(resizeNewHeightText.getText()),
                     resizeAlgorithmChoice.getValue());
 
             double threshold = bwThresholdSlider.getValue();
-            BlackWhiteAlgorithm bwAlgorithm = bwAlgoChoice.getValue();
-            convertToBlackAndBackground(workingCopy, bwAlgorithm, threshold);
+            BlackWhiteConversionAlgorithm bwAlgorithm = bwAlgoChoice.getValue();
+            BuffImageUtils.convertToBlackAndWhiteInPlace(workingCopy, bwAlgorithm, threshold);
 
-            int backgroundColor = colorToInt(lcdImageBackgroundColorPicker.getValue());
-            workingCopy = replaceWhite(workingCopy, backgroundColor);
+            int backgroundColor = BuffImageUtils.colorToInt(lcdImageBackgroundColorPicker.getValue());
+            workingCopy = BuffImageUtils.replaceWhiteColor(workingCopy, backgroundColor);
 
             this.transformedImage = workingCopy;
             Image transformedFxImage = SwingFXUtils.toFXImage(workingCopy, null);
@@ -332,124 +325,6 @@ public class MainWindow implements Initializable {
             UiService.errorDialog("Failure: " + e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    private static int colorToInt(Color c) {
-        int r = (int) Math.round(c.getRed() * 255);
-        int g = (int) Math.round(c.getGreen() * 255);
-        int b = (int) Math.round(c.getBlue() * 255);
-        return (r << 16) | (g << 8) | b;
-    }
-
-    public static BufferedImage createCopy(BufferedImage bufferImage) {
-        ColorModel colorModel = bufferImage.getColorModel();
-        WritableRaster raster = bufferImage.copyData(null);
-        boolean isAlphaPremultiplied = colorModel.isAlphaPremultiplied();
-        return new BufferedImage(colorModel, raster, isAlphaPremultiplied, null);
-    }
-
-    public static BufferedImage createResizedImage(BufferedImage img, int newW, int newH, ResizeAlgorithm algo) {
-        java.awt.Image tmp = img.getScaledInstance(newW, newH, algo.scalingAlgorithm());
-        BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
-
-        Graphics2D g2d = dimg.createGraphics();
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-
-        // Notice that we drop transparency here
-        g2d.setColor(java.awt.Color.WHITE);
-        g2d.fillRect(0, 0, newW, newH);
-
-        g2d.drawImage(tmp, 0, 0, null);
-        g2d.dispose();
-
-        return dimg;
-    }
-
-    public static BufferedImage createResizedImagePixelized(BufferedImage img, int newW, int newH) {
-        BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
-
-        Graphics2D g2d = dimg.createGraphics();
-        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-        g2d.drawImage(img, 0, 0, newW, newH, null);
-        g2d.dispose();
-
-        return dimg;
-    }
-
-    public static BufferedImage createCroppedImage(BufferedImage img, int cropTop, int cropBottom, int cropLeft, int cropRight) {
-        return img.getSubimage(
-                cropLeft,
-                cropTop,
-                img.getWidth() - cropLeft - cropRight,
-                img.getHeight() - cropTop - cropBottom);
-    }
-
-    private BufferedImage convertToBlackAndBackground(BufferedImage workingCopy,
-                                             BlackWhiteAlgorithm bwAlgorithm,
-                                             double threshold) throws Exception {
-        double normalizedThreshold = threshold / 100.0; // normalize [0,100] -> [0,1]
-        switch (bwAlgorithm) {
-            case DITHERING:
-                return applyDithering(workingCopy, normalizedThreshold);
-
-            case THRESHOLD:
-                return toBlackAndWhite(workingCopy, normalizedThreshold);
-
-            default:
-                throw new IllegalArgumentException("bwAlgorithm");
-        }
-    }
-
-    private BufferedImage applyDithering(BufferedImage workingCopy, double normalizedThreshold) throws ImageWriteException {
-        // image is updated in place
-        org.apache.commons.imaging.palette.Dithering.applyFloydSteinbergDithering(workingCopy,
-                new Palette() {
-                    @Override
-                    public int getPaletteIndex(int rgb) throws ImageWriteException {
-                        if (ColorConversions.convertRGBtoHSL(rgb).L < normalizedThreshold) {
-                            return 0;
-                        }
-                        return 1;
-                    }
-
-                    @Override
-                    public int getEntry(int index) {
-                        return index == 0 ? 0x000000 : 0xffffff;
-                    }
-
-                    @Override
-                    public int length() {
-                        return 2;
-                    }
-                });
-
-        return workingCopy;
-    }
-
-    private static BufferedImage toBlackAndWhite(BufferedImage original, double normalizedThreshold) {
-        DataBuffer db = original.getRaster().getDataBuffer();
-        for (int i = 0; i < db.getSize(); i++) {
-            int rgb = db.getElem(i);
-            if (ColorConversions.convertRGBtoHSL(rgb).L < normalizedThreshold) {
-                db.setElem(i, 0x000000);
-            }
-            else {
-                db.setElem(i, 0xffffff);
-            }
-        }
-        return original;
-    }
-
-    private static BufferedImage replaceWhite(BufferedImage original, int newColor) {
-        DataBuffer db = original.getRaster().getDataBuffer();
-        for (int i = 0; i < db.getSize(); i++) {
-            int rgb = db.getElem(i);
-            if (rgb != 0) {
-                db.setElem(i, newColor);
-            }
-        }
-        return original;
     }
 
     public void guiCrop(ActionEvent actionEvent) {
@@ -497,23 +372,6 @@ public class MainWindow implements Initializable {
         }
     }
 
-    private static FileChooser setupOpenImageDialog() {
-        FileChooser fileChooser = new FileChooser();
-
-        fileChooser.setTitle("Select image...");
-        fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
-
-        fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("All Images", "*.jpg", "*.jpeg", "*.png", "*.bmp", "*.ico"),
-                new FileChooser.ExtensionFilter("JPEG Images", "*.jpg", "*.jpeg"),
-                new FileChooser.ExtensionFilter("PNG Images", "*.png"),
-                new FileChooser.ExtensionFilter("BMP Images", "*.bmp"),
-                new FileChooser.ExtensionFilter("ICO Images", "*.ico")
-        );
-
-        return fileChooser;
-    }
-
     private int cropMoveTop, cropMoveBottom, cropMoveLeft, cropMoveRight;
     private int cropMoveStartX, cropMoveStartY;
     private boolean cropMoveInProgress = false;
@@ -526,8 +384,8 @@ public class MainWindow implements Initializable {
 
         int deltaX = (int)mouseEvent.getX() - cropMoveStartX;
         int deltaY = (int)mouseEvent.getY() - cropMoveStartY;
-        deltaX = clamp(deltaX, -cropMoveLeft, cropMoveRight);
-        deltaY = clamp(deltaY, -cropMoveTop, cropMoveBottom);
+        deltaX = MathUtils.clamp(deltaX, -cropMoveLeft, cropMoveRight);
+        deltaY = MathUtils.clamp(deltaY, -cropMoveTop, cropMoveBottom);
 
         setCropBounds(cropMoveTop + deltaY, cropMoveBottom - deltaY,
                 cropMoveLeft + deltaX, cropMoveRight - deltaX);
@@ -535,12 +393,6 @@ public class MainWindow implements Initializable {
         setCropShadow(originalImage.getWidth(), originalImage.getHeight(),
                 cropMoveTop + deltaY, cropMoveBottom - deltaY,
                 cropMoveLeft + deltaX, cropMoveRight - deltaX);
-    }
-
-    private int clamp(int value, int min, int max) {
-        return value < min ? min :
-               value > max ? max :
-               value;
     }
 
     @FXML
@@ -567,7 +419,7 @@ public class MainWindow implements Initializable {
 
     @FXML
     private void openCode() {
-        String code = new Img2Code(transformedImage, exportFormatChoice.getValue()).convertBlackWhiteToHeader();
+        String code = new Img2CodeConverter(transformedImage, exportFormatChoice.getValue()).convertBlackWhiteToHeader();
         CodeWindow.show(this.bwAlgoChoice.getScene().getWindow(), code);
     }
 
