@@ -1,6 +1,5 @@
 package pl.marcinchwedczuk.img2h.gui.mainwindow;
 
-import com.google.common.base.Charsets;
 import javafx.beans.binding.Bindings;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
@@ -15,11 +14,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.commons.imaging.ImageFormat;
@@ -35,7 +32,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.List;
@@ -85,44 +81,19 @@ public class MainWindow implements Initializable {
     private Label formatLabel;
 
     @FXML
-    private TextField cropDownText;
-
-    @FXML
-    private TextField cropTopText;
-
-    @FXML
-    private TextField cropLeftText;
-
-    @FXML
-    private TextField cropRightText;
-
-    @FXML
     private TextField resizeNewWidthText;
 
     @FXML
     private TextField resizeNewHeightText;
 
     @FXML
-    public ChoiceBox<ResizeAlgorithm> resizeAlgorithmChoice;
+    private ChoiceBox<ResizeAlgorithm> resizeAlgorithmChoice;
 
     @FXML
     private ChoiceBox<BlackWhiteConversionAlgorithm> bwAlgoChoice;
 
     @FXML
-    public ChoiceBox<ExportFormat> exportFormatChoice;
-
-
-    @FXML
-    private Rectangle cropShadowTop;
-
-    @FXML
-    private Rectangle cropShadowBottom;
-
-    @FXML
-    private Rectangle cropShadowLeft;
-
-    @FXML
-    private Rectangle cropShadowRight;
+    private ChoiceBox<ExportFormat> exportFormatChoice;
 
     @FXML
     private Slider bwThresholdSlider;
@@ -140,7 +111,7 @@ public class MainWindow implements Initializable {
     private final FileChooser saveHeaderFileChooser = FileChoosers.newSaveHeaderFileChooser();
 
     private final DebouncingEventHandler<ResizeRequestedEvent> resizeLcdImageCrisp =
-            new DebouncingEventHandler<>(Duration.ofSeconds(1), this::resizeLcdImageCrisp);
+            new DebouncingEventHandler<>(Duration.ofMillis(500), this::debouncedLcdImageZoom);
 
     private BufferedImage originalImage = null;
     private BufferedImage transformedImage = null;
@@ -162,18 +133,33 @@ public class MainWindow implements Initializable {
         lcdImageZoomLabel.textProperty().bind(Bindings.createStringBinding(
                 () -> String.format("%3.0f%%", lcdImageZoom.getValue()),
                 lcdImageZoom.valueProperty()));
-        lcdImageZoom.valueProperty().addListener(((observable, oldValue, newValue) -> {
-            lcdImage.setFitWidth((int)(0.5 + transformedImage.getWidth() * (double)newValue / 100.0));
-            lcdImage.setFitHeight((int)(0.5 + transformedImage.getHeight() * (double)newValue / 100.0));
 
-            resizeLcdImageCrisp.handle(new ResizeRequestedEvent((double)newValue));
-        }));
+        lcdImageZoom.valueProperty().addListener((observable, oldZoom, newZoom) -> {
+            fastLcdImageZoom((double)newZoom);
+            resizeLcdImageCrisp.handle(new ResizeRequestedEvent((double)newZoom));
+        });
     }
 
-    private void resizeLcdImageCrisp(ResizeRequestedEvent event) {
-        BufferedImage scaled = BuffImageUtils.resizeImageWithoutAntialiasing(transformedImage,
-            (int)(0.5 + transformedImage.getWidth() * event.zoom / 100.0),
-            (int)(0.5 + transformedImage.getHeight() * event.zoom / 100.0));
+    private void fastLcdImageZoom(double zoom) {
+        // Zoom like this will result in blurred image
+        lcdImage.setFitWidth((int)Math.round(transformedImage.getWidth() * zoom / 100.0));
+        lcdImage.setFitHeight((int)Math.round(transformedImage.getHeight() * zoom / 100.0));
+    }
+
+    private void debouncedLcdImageZoom(ResizeRequestedEvent event) {
+        setLcdImageWithPixelizedZoom(transformedImage, event.zoom);
+    }
+
+    /**
+     * @param image
+     *  Image that should be displayed.
+     * @param zoom
+     *  Image zoom in percents e.g. 200 means that image should be twice as big (x2).
+     */
+    private void setLcdImageWithPixelizedZoom(BufferedImage image, double zoom) {
+        BufferedImage scaled = BuffImageUtils.resizeImageWithoutAntialiasing(image,
+                (int)Math.round(image.getWidth() * zoom / 100.0),
+                (int)Math.round(image.getHeight() * zoom / 100.0));
 
         Image transformedFxImage = SwingFXUtils.toFXImage(scaled, null);
         this.lcdImage.setImage(transformedFxImage);
@@ -227,36 +213,6 @@ public class MainWindow implements Initializable {
         event.consume();
     }
 
-    private void setCropShadow(int imageWidth, int imageHeight,
-                               int cropTop, int cropBottom, int cropLeft, int cropRight) {
-        this.cropShadowTop.setX(0);
-        this.cropShadowTop.setY(0);
-        this.cropShadowTop.setWidth(imageWidth);
-        this.cropShadowTop.setHeight(cropTop);
-
-        this.cropShadowBottom.setX(0);
-        this.cropShadowBottom.setY(imageHeight - cropBottom);
-        this.cropShadowBottom.setWidth(imageWidth);
-        this.cropShadowBottom.setHeight(cropBottom);
-
-        this.cropShadowLeft.setX(0);
-        this.cropShadowLeft.setY(cropTop);
-        this.cropShadowLeft.setWidth(cropLeft);
-        this.cropShadowLeft.setHeight(imageHeight - cropTop - cropBottom);
-
-        this.cropShadowRight.setX(imageWidth - cropRight);
-        this.cropShadowRight.setY(cropTop);
-        this.cropShadowRight.setWidth(cropRight);
-        this.cropShadowRight.setHeight(imageHeight - cropTop - cropBottom);
-    }
-
-    private void setCropBounds(int cropTop, int cropBottom, int cropLeft, int cropRight) {
-        cropTopText.setText(Integer.toString(cropTop));
-        cropDownText.setText(Integer.toString(cropBottom));
-        cropLeftText.setText(Integer.toString(cropLeft));
-        cropRightText.setText(Integer.toString(cropRight));
-    }
-
     private void loadImage(File imageFile) {
         try {
             ImageFormat format = Imaging.guessFormat(imageFile);
@@ -270,9 +226,6 @@ public class MainWindow implements Initializable {
             this.originalImageView.setImage(image);
             this.originalImageView.setFitWidth(image.getWidth());
             this.originalImageView.setFitHeight(image.getHeight());
-
-            setCropBounds(0, 0, 0, 0);
-            setCropShadow(originalImage.getWidth(), originalImage.getHeight(), 0, 0, 0, 0);
 
             resizeNewWidthText.setText(Integer.toString(originalImage.getWidth()));
             resizeNewHeightText.setText(Integer.toString(originalImage.getHeight()));
@@ -301,16 +254,6 @@ public class MainWindow implements Initializable {
         try {
             BufferedImage workingCopy = BuffImageUtils.copy(originalImage);
 
-            int
-                    cropTop = Integer.parseInt(cropTopText.getText()),
-                    cropBottom = Integer.parseInt(cropDownText.getText()),
-                    cropLeft = Integer.parseInt(cropLeftText.getText()),
-                    cropRight = Integer.parseInt(cropRightText.getText());
-            workingCopy = BuffImageUtils.cropImage(workingCopy, cropTop, cropBottom, cropLeft, cropRight);
-            setCropShadow(
-                    originalImage.getWidth(), originalImage.getHeight(),
-                    cropTop, cropBottom, cropLeft, cropRight);
-
             workingCopy = BuffImageUtils.resizedImage(workingCopy,
                     Integer.parseInt(resizeNewWidthText.getText()),
                     Integer.parseInt(resizeNewHeightText.getText()),
@@ -324,13 +267,9 @@ public class MainWindow implements Initializable {
             workingCopy = BuffImageUtils.replaceWhiteColor(workingCopy, backgroundColor);
 
             this.transformedImage = workingCopy;
-            Image transformedFxImage = SwingFXUtils.toFXImage(workingCopy, null);
 
             double zoom = lcdImageZoom.getValue();
-            this.lcdImage.setImage(transformedFxImage);
-            this.lcdImage.setSmooth(false);
-            this.lcdImage.setFitWidth((int)(0.5 + transformedImage.getWidth() * zoom / 100.0));
-            this.lcdImage.setFitHeight((int)(0.5 + transformedImage.getHeight() * zoom / 100.0));
+            setLcdImageWithPixelizedZoom(transformedImage, zoom);
         } catch (Exception e) {
             UiService.errorDialog("Failure: " + e.getMessage());
             e.printStackTrace();
@@ -345,81 +284,10 @@ public class MainWindow implements Initializable {
         runTransformation();
     }
 
-    public void guiExport(ActionEvent actionEvent) {
-        runTransformation();
-    }
-
     public void guiNokia5110SizePreset(ActionEvent actionEvent) {
         int height = 48, width = 84;
         resizeNewWidthText.setText(Integer.toString(width));
         resizeNewHeightText.setText(Integer.toString(height));
-        cropToAspectRatio(width, height);
-    }
-
-    private void cropToAspectRatio(int aspectWidth, int aspectHeight) {
-        double requestedAspect = (double)aspectHeight / aspectWidth;
-        double actualAspect = (double)originalImage.getHeight() / originalImage.getWidth();
-
-        if (actualAspect >= requestedAspect) {
-            // image higher than expected
-            int newWidth = originalImage.getWidth();
-            int newHeight = (int)(requestedAspect * newWidth + 0.5);
-            int cropTop = (originalImage.getHeight() - newHeight) / 2;
-            int cropBottom = originalImage.getHeight() - newHeight - cropTop;
-            setCropBounds(cropTop, cropBottom, 0, 0);
-            setCropShadow(originalImage.getWidth(), originalImage.getHeight(),
-                    cropTop, cropBottom, 0, 0);
-        }
-        else {
-            // image wider than expected
-            int newHeight = originalImage.getHeight();
-            int newWidth = (int)(newHeight * 1.0 / requestedAspect);
-            int cropLeft = (originalImage.getWidth() - newWidth) / 2;
-            int cropRight = originalImage.getWidth() - newWidth - cropLeft;
-            setCropBounds(0, 0, cropLeft, cropRight);
-            setCropShadow(originalImage.getWidth(), originalImage.getHeight(),
-                    0, 0, cropLeft, cropRight);
-        }
-    }
-
-    private int cropMoveTop, cropMoveBottom, cropMoveLeft, cropMoveRight;
-    private int cropMoveStartX, cropMoveStartY;
-    private boolean cropMoveInProgress = false;
-
-    @FXML
-    private void guiMoveCropInProgress(MouseEvent mouseEvent) {
-        if (!cropMoveInProgress) {
-            return;
-        }
-
-        int deltaX = (int)mouseEvent.getX() - cropMoveStartX;
-        int deltaY = (int)mouseEvent.getY() - cropMoveStartY;
-        deltaX = MathUtils.clamp(deltaX, -cropMoveLeft, cropMoveRight);
-        deltaY = MathUtils.clamp(deltaY, -cropMoveTop, cropMoveBottom);
-
-        setCropBounds(cropMoveTop + deltaY, cropMoveBottom - deltaY,
-                cropMoveLeft + deltaX, cropMoveRight - deltaX);
-
-        setCropShadow(originalImage.getWidth(), originalImage.getHeight(),
-                cropMoveTop + deltaY, cropMoveBottom - deltaY,
-                cropMoveLeft + deltaX, cropMoveRight - deltaX);
-    }
-
-    @FXML
-    private void guiMoveCropStart(MouseEvent mouseEvent) {
-        cropMoveInProgress = true;
-        cropMoveStartX = (int)mouseEvent.getX();
-        cropMoveStartY = (int)mouseEvent.getY();
-
-        cropMoveTop = Integer.parseInt(cropTopText.getText());
-        cropMoveBottom = Integer.parseInt(cropDownText.getText());
-        cropMoveLeft = Integer.parseInt(cropLeftText.getText());
-        cropMoveRight = Integer.parseInt(cropRightText.getText());
-    }
-
-    @FXML
-    private void guiMoveCropStop() {
-        cropMoveInProgress = false;
     }
 
     @FXML
