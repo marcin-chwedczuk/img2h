@@ -87,6 +87,9 @@ public class MainWindow implements Initializable {
     private ChoiceBox<ResizeAlgorithm> resizeAlgorithmChoice;
 
     @FXML
+    private CheckBox preserveAspectCheckBox;
+
+    @FXML
     private ChoiceBox<BlackWhiteConversionAlgorithm> bwAlgoChoice;
 
     @FXML
@@ -256,10 +259,7 @@ public class MainWindow implements Initializable {
                             ? java.awt.Color.BLACK
                             : java.awt.Color.WHITE);
 
-            workingCopy = BufferedImageUtils.resizedImage(workingCopy,
-                    Integer.parseInt(resizeNewWidthText.getText()),
-                    Integer.parseInt(resizeNewHeightText.getText()),
-                    resizeAlgorithmChoice.getValue());
+            workingCopy = resizeImage(workingCopy);
 
             double threshold = bwThresholdSlider.getValue();
             BlackWhiteConversionAlgorithm bwAlgorithm = bwAlgoChoice.getValue();
@@ -276,6 +276,27 @@ public class MainWindow implements Initializable {
             UiService.errorDialog("Failure: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private BufferedImage resizeImage(BufferedImage workingCopy) {
+        int newW = Integer.parseInt(resizeNewWidthText.getText());
+        int newH = Integer.parseInt(resizeNewHeightText.getText());
+
+        if (preserveAspectCheckBox.isSelected()) {
+            double srcAspect = (double)workingCopy.getHeight() / workingCopy.getWidth();
+            double destAspect = (double)newH / newW;
+
+            if (srcAspect >= destAspect) {
+                newW = MathUtils.clamp((int)Math.round(newH / srcAspect), 0, newW);
+            }
+            else {
+                newH = MathUtils.clamp((int)Math.round(newW * srcAspect), 0, newH);
+            }
+        }
+
+        return BufferedImageUtils.resizedImage(workingCopy,
+                newW, newH,
+                resizeAlgorithmChoice.getValue());
     }
 
     public void guiCrop(ActionEvent actionEvent) {
