@@ -10,24 +10,37 @@ import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 
-public class BuffImageUtils {
-    private BuffImageUtils() { }
+public class BufferedImageUtils {
+    private BufferedImageUtils() { }
 
-    public static BufferedImage resizedImage(BufferedImage img, int newW, int newH, ResizeAlgorithm algo) {
-        java.awt.Image tmp = img.getScaledInstance(newW, newH, algo.scalingAlgorithm());
-        BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
+    public static BufferedImage removeAlpha(BufferedImage img, java.awt.Color replacementColor) {
+        // Notice type RGB - no alpha channel
+        BufferedImage tmp = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_INT_RGB);
 
-        Graphics2D g2d = dimg.createGraphics();
+        Graphics2D g2d = tmp.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 
         // Notice that we drop transparency here if it was present in the original image
-        g2d.setColor(java.awt.Color.WHITE);
-        g2d.fillRect(0, 0, newW, newH);
+        g2d.setColor(replacementColor);
+        g2d.fillRect(0, 0, img.getWidth(), img.getHeight());
 
+        // Create image copy
+        g2d.drawImage(img, 0, 0, null);
+        g2d.dispose();
+
+        return tmp;
+    }
+
+    public static BufferedImage resizedImage(BufferedImage img, int newW, int newH, ResizeAlgorithm algo) {
+        java.awt.Image tmp = img.getScaledInstance(newW, newH, algo.scalingAlgorithm());
+
+        BufferedImage resized = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = resized.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         g2d.drawImage(tmp, 0, 0, null);
         g2d.dispose();
 
-        return dimg;
+        return resized;
     }
 
     public static BufferedImage resizeImageWithoutAntialiasing(BufferedImage img, int newW, int newH) {

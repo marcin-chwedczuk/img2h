@@ -60,16 +60,10 @@ public class MainWindow implements Initializable {
     }
 
     @FXML
-    private BorderPane mainWindow;
-
-    @FXML
     private ImageView originalImageView;
 
     @FXML
     private ImageView lcdImage;
-
-    @FXML
-    private ScrollPane imageContainer;
 
     @FXML
     private Label originalWidthLabel;
@@ -79,6 +73,9 @@ public class MainWindow implements Initializable {
 
     @FXML
     private Label formatLabel;
+
+    @FXML
+    private RadioButton transparentAsBlackRadioButton;
 
     @FXML
     private TextField resizeNewWidthText;
@@ -157,7 +154,7 @@ public class MainWindow implements Initializable {
      *  Image zoom in percents e.g. 200 means that image should be twice as big (x2).
      */
     private void setLcdImageWithPixelizedZoom(BufferedImage image, double zoom) {
-        BufferedImage scaled = BuffImageUtils.resizeImageWithoutAntialiasing(image,
+        BufferedImage scaled = BufferedImageUtils.resizeImageWithoutAntialiasing(image,
                 (int)Math.round(image.getWidth() * zoom / 100.0),
                 (int)Math.round(image.getHeight() * zoom / 100.0));
 
@@ -252,19 +249,24 @@ public class MainWindow implements Initializable {
         }
 
         try {
-            BufferedImage workingCopy = BuffImageUtils.copy(originalImage);
+            BufferedImage workingCopy = BufferedImageUtils.copy(originalImage);
 
-            workingCopy = BuffImageUtils.resizedImage(workingCopy,
+            workingCopy = BufferedImageUtils.removeAlpha(workingCopy,
+                    this.transparentAsBlackRadioButton.isSelected()
+                            ? java.awt.Color.BLACK
+                            : java.awt.Color.WHITE);
+
+            workingCopy = BufferedImageUtils.resizedImage(workingCopy,
                     Integer.parseInt(resizeNewWidthText.getText()),
                     Integer.parseInt(resizeNewHeightText.getText()),
                     resizeAlgorithmChoice.getValue());
 
             double threshold = bwThresholdSlider.getValue();
             BlackWhiteConversionAlgorithm bwAlgorithm = bwAlgoChoice.getValue();
-            BuffImageUtils.convertToBlackAndWhiteInPlace(workingCopy, bwAlgorithm, threshold);
+            BufferedImageUtils.convertToBlackAndWhiteInPlace(workingCopy, bwAlgorithm, threshold);
 
-            int backgroundColor = BuffImageUtils.colorToInt(lcdImageBackgroundColorPicker.getValue());
-            workingCopy = BuffImageUtils.replaceWhiteColor(workingCopy, backgroundColor);
+            int backgroundColor = BufferedImageUtils.colorToInt(lcdImageBackgroundColorPicker.getValue());
+            workingCopy = BufferedImageUtils.replaceWhiteColor(workingCopy, backgroundColor);
 
             this.transformedImage = workingCopy;
 
