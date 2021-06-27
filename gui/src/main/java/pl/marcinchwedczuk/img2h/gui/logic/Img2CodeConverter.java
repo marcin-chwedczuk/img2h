@@ -2,52 +2,57 @@ package pl.marcinchwedczuk.img2h.gui.logic;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
+import java.util.Objects;
 
 public class Img2CodeConverter {
     private final BufferedImage image;
     private final ExportFormat format;
+    private final String variableName;
 
-    public Img2CodeConverter(BufferedImage image, ExportFormat format) {
-        this.image = image;
-        this.format = format;
+    public Img2CodeConverter(BufferedImage image,
+                             ExportFormat format,
+                             String variableName) {
+        this.image = Objects.requireNonNull(image);
+        this.format = Objects.requireNonNull(format);
+        this.variableName = Objects.requireNonNull(variableName);
     }
 
     public String convertImageToHeader() {
-        StringBuilder header = new StringBuilder();
+        StringBuilder headerFile = new StringBuilder();
 
-        startVariableDeclaration("glcd_bmp", image, header);
+        defineWidthAndHeightConstants(headerFile);
+        startPixelsArrayDeclaration(headerFile);
 
         DataBuffer db = image.getRaster().getDataBuffer();
-        int size = db.getSize();
         int curr = 0;
 
-        for (int h = 0; h < image.getHeight(); h++) {
-            header.append("\n    "); // append enter and 4 spaces
+        for (int row = 0; row < image.getHeight(); row++) {
+            headerFile.append("\n    "); // append enter and 4 spaces
 
-            for (int w = 0; w < image.getWidth(); w += 8) {
-                int maxIndex = Math.min(w + 8, image.getWidth());
+            for (int byteStart = 0; byteStart < image.getWidth(); byteStart += 8) {
+                int maxIndex = Math.min(byteStart + 8, image.getWidth());
 
                 // Take 8 pixels at once
                 int bits = 0;
                 int pos = 0x80;
-                for (int i = w; (i < maxIndex); i++) {
+                for (int i = byteStart; i < maxIndex; i++) {
                     bits |= (db.getElem(curr) == 0x000000) ? pos : 0;
                     pos >>= 1;
                     curr++;
                 }
 
-                append8Bits(header, bits, format);
-                header.append(", ");
+                append8Bits(headerFile, bits, format);
+                headerFile.append(", ");
             }
         }
 
         // Remove last ', ' before closing '}'
-        if (header.length() > 2 && header.substring(header.length()-2).equals(", ")) {
-            header.replace(header.length()-2, header.length(), "");
+        if (headerFile.length() > 2 && headerFile.substring(headerFile.length()-2).equals(", ")) {
+            headerFile.replace(headerFile.length()-2, headerFile.length(), "");
         }
 
-        finishVariableDeclaration(header);
-        return header.toString();
+        finishPixelsArrayDeclaration(headerFile);
+        return headerFile.toString();
     }
 
     private void append8Bits(StringBuilder header, int bits, ExportFormat format) {
@@ -64,19 +69,21 @@ public class Img2CodeConverter {
         }
     }
 
+    private void defineWidthAndHeightConstants(StringBuilder header) {
+        header.append(String.format("#define %s_WIDTH (%d)",
+                variableName.toUpperCase(), image.getWidth()));
+        header.append("\n");
 
-    private void startVariableDeclaration(String variableName, BufferedImage img, StringBuilder header) {
-        // TODO: Use #define
-        header.append(String.format("static const unsigned int PROGMEM %s_WIDTH = %d;",
-                variableName.toUpperCase(), img.getWidth()));
+        header.append(String.format("#define %s_HEIGHT (%d)",
+                variableName.toUpperCase(), image.getHeight()));
         header.append("\n");
-        header.append(String.format("static const unsigned int PROGMEM %s_HEIGHT = %d;",
-                variableName.toUpperCase(), img.getHeight()));
-        header.append("\n");
+    }
+
+    private void startPixelsArrayDeclaration(StringBuilder header) {
         header.append(String.format("static const unsigned char PROGMEM %s[] = {", variableName));
     }
 
-    private void finishVariableDeclaration(StringBuilder header) {
+    private void finishPixelsArrayDeclaration(StringBuilder header) {
         header.append("\n};");
     }
 

@@ -8,14 +8,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -27,7 +23,7 @@ import pl.marcinchwedczuk.img2h.gui.codewindow.CodeWindow;
 import pl.marcinchwedczuk.img2h.gui.logic.*;
 
 import javax.imageio.ImageIO;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -39,6 +35,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 public class MainWindow implements Initializable {
+
 
     public static MainWindow showOn(Stage window) {
         try {
@@ -93,10 +90,13 @@ public class MainWindow implements Initializable {
     private ChoiceBox<BlackWhiteConversionAlgorithm> bwAlgoChoice;
 
     @FXML
+    private Slider bwThresholdSlider;
+
+    @FXML
     private ChoiceBox<ExportFormat> exportFormatChoice;
 
     @FXML
-    private Slider bwThresholdSlider;
+    private TextField variableNameTextField;
 
     @FXML
     private ColorPicker lcdImageBackgroundColorPicker;
@@ -118,9 +118,6 @@ public class MainWindow implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        this.originalImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-        this.transformedImage = originalImage;
-
         bwAlgoChoice.getItems().addAll(BlackWhiteConversionAlgorithm.values());
         bwAlgoChoice.setValue(BlackWhiteConversionAlgorithm.DITHERING);
 
@@ -130,6 +127,8 @@ public class MainWindow implements Initializable {
         resizeAlgorithmChoice.getItems().addAll(ResizeAlgorithm.values());
         resizeAlgorithmChoice.setValue(ResizeAlgorithm.SMOOTH);
 
+        variableNameTextField.setText("image");
+
         lcdImageZoomLabel.textProperty().bind(Bindings.createStringBinding(
                 () -> String.format("%3.0f%%", lcdImageZoom.getValue()),
                 lcdImageZoom.valueProperty()));
@@ -138,6 +137,8 @@ public class MainWindow implements Initializable {
             fastLcdImageZoom((double)newZoom);
             resizeLcdImageCrisp.handle(new ResizeRequestedEvent((double)newZoom));
         });
+
+        loadImage(new File(getClass().getResource("default-image.png").getFile()));
     }
 
     private void fastLcdImageZoom(double zoom) {
@@ -299,6 +300,16 @@ public class MainWindow implements Initializable {
                 resizeAlgorithmChoice.getValue());
     }
 
+    private String convertImageToHeader() {
+        runTransformation();
+
+        String code = new Img2CodeConverter(
+                transformedImage,
+                exportFormatChoice.getValue(),
+                variableNameTextField.getText()).convertImageToHeader();
+        return code;
+    }
+
     public void guiCrop(ActionEvent actionEvent) {
         runTransformation();
     }
@@ -336,11 +347,5 @@ public class MainWindow implements Initializable {
 
     private Stage thisWindow() {
         return (Stage)this.bwAlgoChoice.getScene().getWindow();
-    }
-
-    private String convertImageToHeader() {
-        String code = new Img2CodeConverter(transformedImage, exportFormatChoice.getValue())
-                        .convertImageToHeader();
-        return code;
     }
 }
