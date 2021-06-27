@@ -138,7 +138,16 @@ public class MainWindow implements Initializable {
             resizeLcdImageCrisp.handle(new ResizeRequestedEvent((double)newZoom));
         });
 
+        // Some values that are not reset while loading an image
+        lcdImageZoom.setValue(100);
+        lcdImageBackgroundColorPicker.setValue(Color.WHITE);
+
+        exportFormatChoice.setValue(ExportFormat.C_BITS_LITERAL);
+
         loadImage(new File(getClass().getResource("default-image.png").getFile()));
+
+        guiNokia5110SizePreset();
+        resizeAlgorithmChoice.setValue(ResizeAlgorithm.SMOOTH);
     }
 
     private void fastLcdImageZoom(double zoom) {
@@ -228,17 +237,8 @@ public class MainWindow implements Initializable {
             this.originalImageView.setFitWidth(image.getWidth());
             this.originalImageView.setFitHeight(image.getHeight());
 
-            resizeNewWidthText.setText(Integer.toString(originalImage.getWidth()));
-            resizeNewHeightText.setText(Integer.toString(originalImage.getHeight()));
-            resizeAlgorithmChoice.setValue(ResizeAlgorithm.SMOOTH);
-
             bwAlgoChoice.setValue(BlackWhiteConversionAlgorithm.DITHERING);
             bwThresholdSlider.setValue(50.0);
-
-            exportFormatChoice.setValue(ExportFormat.C_BITS_LITERAL);
-
-            lcdImageZoom.setValue(100);
-            lcdImageBackgroundColorPicker.setValue(Color.WHITE);
 
         } catch (Exception e) {
             UiService.errorDialog("Failure: " + e.getMessage());
@@ -310,18 +310,22 @@ public class MainWindow implements Initializable {
         return code;
     }
 
-    public void guiCrop(ActionEvent actionEvent) {
+    @FXML
+    private void guiCrop(ActionEvent actionEvent) {
         runTransformation();
     }
 
-    public void guiResize(ActionEvent actionEvent) {
+    @FXML
+    private void guiResize(ActionEvent actionEvent) {
         runTransformation();
     }
 
-    public void guiNokia5110SizePreset(ActionEvent actionEvent) {
+    @FXML
+    private void guiNokia5110SizePreset() {
         int height = 48, width = 84;
         resizeNewWidthText.setText(Integer.toString(width));
         resizeNewHeightText.setText(Integer.toString(height));
+        preserveAspectCheckBox.setSelected(true);
     }
 
     @FXML
