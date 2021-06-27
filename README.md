@@ -2,14 +2,16 @@
 
 ![Build Status](https://github.com/marcin-chwedczuk/img2h/actions/workflows/ci.yaml/badge.svg)
 
-WORK IN PROGRESS.
-
 This is a simple tool that allows you to convert
 images and icons to Arduino's Adafruit GFX library format.
 
 ![Main window](docs/main-window.png)
 
-![Arduino](docs/arduino.png)
+Example images created using this app:
+
+![Demo 1](docs/demo1.png)
+![Demo 2](docs/demo2.png)
+![Demo 3](docs/demo3.png)
 
 ### How to run application
 
