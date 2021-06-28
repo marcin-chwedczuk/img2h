@@ -13,6 +13,7 @@
 
     <modules>
         <module>gui</module>
+        <module>shaded-nonmodular-deps</module>
     </modules>
 
     <properties>

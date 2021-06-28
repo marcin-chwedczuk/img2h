@@ -7,12 +7,14 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="gui" />
+        <module name="shaded-nonmodular-deps" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="domain" target="11" />
       <module name="gui" target="11" />
       <module name="parent-project" target="11" />
+      <module name="shaded-nonmodular-deps" target="11" />
     </bytecodeTargetLevel>
   </component>
 </project>
