@@ -5,5 +5,5 @@
 --main-class ${main-class}
 --input ${project.build.directory}/dependency
 --app-version ${app.version}
---runtime-image ${project.build.directory}/jvm-image
+--runtime-image ${project.build.directory}/gui
 --temp ${project.build.directory}/installer-work

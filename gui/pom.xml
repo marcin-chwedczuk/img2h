@@ -17,6 +17,7 @@
     <properties>
         <main-class>pl.marcinchwedczuk.img2h.gui.App</main-class>
         <app.name>img2h</app.name>
+        <app.version>1.0.0</app.version>
         <jvm.modules>javafx.media,javafx.controls,javafx.fxml,java.logging</jvm.modules>
         <windows.upgrade.uuid>54c286aa-c3a4-4fdc-8cfe-76a5739b1cc6</windows.upgrade.uuid>
         <windows.vendor>marcinchwedczuk.pl</windows.vendor>
@@ -205,7 +206,7 @@
 
     <profiles>
         <profile>
-            <id>mk-installer</id>
+            <id>mkinstaller</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
@@ -222,8 +223,6 @@
                 </resources>
 
                 <plugins>
-
-
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
@@ -254,35 +253,11 @@
                         </configuration>
                     </plugin>
                     <plugin>
-                        <!-- https://github.com/wiverson/jtoolprovider-plugin -->
                         <groupId>io.github.wiverson</groupId>
                         <artifactId>jtoolprovider-plugin</artifactId>
                         <version>1.0.34</version>
                         <executions>
-                            <!-- This command runs jlink, generating a custom JVM by combining the JavaFX modules bundled in
-                            this project with the JDK modules. -->
-                            <execution>
-                                <id>jlink</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>java-tool</goal>
-                                </goals>
-                                <configuration>
-                                    <toolName>jlink</toolName>
-                                    <removeDirectories>${project.build.directory}/jvm-image/</removeDirectories>
-                                    <modulePath>${project.basedir}/${platform}-javafx/javafx-jmods-${javafx.version}/</modulePath>
-                                    <addModules>${jvm.modules}</addModules>
-                                    <output>${project.build.directory}/jvm-image</output>
-                                    <args>
-                                        <arg>--strip-native-commands</arg>
-                                        <arg>--no-header-files</arg>
-                                        <arg>--strip-debug</arg>
-                                        <arg>--no-man-pages</arg>
-                                        <arg>--compress=2</arg>
-                                    </args>
-                                </configuration>
-                            </execution>
-                            <!-- The command that actually generates the installer. The options for each platform
+                           <!-- The command that actually generates the installer. The options for each platform
                             are found the /src/packaging directory. These files are copied into the target directory by
                             the Maven resources plugin, which does the filtering to replace the original values with
                             the actual Maven properties.
