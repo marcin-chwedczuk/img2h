@@ -3,8 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/gui/gui.iml" filepath="$PROJECT_DIR$/gui/gui.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gui-nonmodular-dependencies/gui-nonmodular-dependencies.iml" filepath="$PROJECT_DIR$/gui-nonmodular-dependencies/gui-nonmodular-dependencies.iml" />
       <module fileurl="file://$PROJECT_DIR$/parent-project.iml" filepath="$PROJECT_DIR$/parent-project.iml" />
-      <module fileurl="file://$PROJECT_DIR$/shaded-nonmodular-deps/shaded-nonmodular-deps.iml" filepath="$PROJECT_DIR$/shaded-nonmodular-deps/shaded-nonmodular-deps.iml" />
     </modules>
   </component>
 </project>

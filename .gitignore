@@ -117,3 +117,5 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+# generating shaded dependencies
+dependency-reduced-pom.xml

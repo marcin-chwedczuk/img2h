@@ -11,7 +11,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="shaded-nonmodular-deps" />
+    <orderEntry type="module" module-name="gui-nonmodular-dependencies" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-imaging:1.0-alpha2" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:guava:30.1.1-jre" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:failureaccess:1.0.1" level="project" />

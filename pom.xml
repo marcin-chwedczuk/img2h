@@ -13,7 +13,7 @@
 
     <modules>
         <module>gui</module>
-        <module>shaded-nonmodular-deps</module>
+        <module>gui-nonmodular-dependencies</module>
     </modules>
 
     <properties>
@@ -62,6 +62,11 @@
            <dependency>
                 <groupId>pl.marcinchwedczuk.img2h</groupId>
                 <artifactId>gui</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>pl.marcinchwedczuk.img2h</groupId>
+                <artifactId>gui-nonmodular-dependencies</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

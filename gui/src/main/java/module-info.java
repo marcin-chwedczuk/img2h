@@ -4,7 +4,9 @@ module pl.marcinchwedczuk.img2h.gui {
     requires javafx.graphics;
     requires javafx.swing;
     requires java.desktop;
-    requires shadeddeps;
+
+    // Shaded non-modular dependencies with synthetic module-info
+    requires gui.nonmodular.dependencies;
 
     exports pl.marcinchwedczuk.img2h.gui;
     exports pl.marcinchwedczuk.img2h.gui.mainwindow;
