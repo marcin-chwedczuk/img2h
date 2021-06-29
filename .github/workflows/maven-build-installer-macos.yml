@@ -1,6 +1,12 @@
 # This workflow will build a Java project with Maven
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
+# Fix for application is damaged error
+# - Copy app to applications folder
+# - Run in terminal: sudo xattr -cr img2h.app
+# See: https://github.com/archimatetool/archi/issues/555#issuecomment-554965144
+# for details.
+
 name: Build macOS Installer
 
 on:
