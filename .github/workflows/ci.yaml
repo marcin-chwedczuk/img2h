@@ -21,6 +21,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: '16'
+          distribution: 'adopt'
       - name: "Build and run unit-tests with Maven"
         run: ./mvnw --batch-mode --update-snapshots clean verify package
       - name: "Run integration tests with Maven"
