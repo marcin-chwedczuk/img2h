@@ -1,4 +1,4 @@
-name: Build and run tests (CI)
+name: "Build and run tests (CI)"
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
     # Every Tuesday at 1PM UTC
     - cron: "0 13 * * 2"
   pull_request:
-    branches: [ main ]
+    branches: ["main"]
 
 jobs:
   build:

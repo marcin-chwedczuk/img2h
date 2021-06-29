@@ -4,15 +4,17 @@
 name: Build Unix Installer
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_run:
+    workflows: ["Build and run tests (CI)"]
+    branches: ["main"]
+    types:
+      - completed
 
 jobs:
   build:
+    # Run only if main workflow succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 16
@@ -27,6 +29,6 @@ jobs:
       with:
         repo_token: "${{secrets.GITHUB_TOKEN}}"
         automatic_release_tag: "Ubuntu-latest"
-        prerelease: true
+        prerelease: false
         title: "Ubuntu Development Build"
         files: ./gui/target/*.deb

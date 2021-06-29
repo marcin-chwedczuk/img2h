@@ -10,14 +10,17 @@
 name: Build macOS Installer
 
 on:
-  push:
-    branches: [ main ]
+  workflow_run:
+    workflows: ["Build and run tests (CI)"]
+    branches: ["main"]
+    types:
+      - completed
 
 jobs:
   build:
-
+    # Run only if main workflow succeeded
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: macos-latest
-
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 16
@@ -32,6 +35,6 @@ jobs:
         with:
           repo_token: "${{secrets.GITHUB_TOKEN}}"
           automatic_release_tag: "macOS-latest"
-          prerelease: true
+          prerelease: false
           title: "macOS Development Build"
           files: ./gui/target/*.dmg
