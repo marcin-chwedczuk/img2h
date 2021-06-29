@@ -56,12 +56,16 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
@@ -82,15 +86,6 @@
             <groupId>org.testfx</groupId>
             <artifactId>openjfx-monocle</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-swing</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-swing</artifactId>
         </dependency>
     </dependencies>
 
@@ -239,7 +234,6 @@
                     <plugin>
                         <groupId>io.github.wiverson</groupId>
                         <artifactId>jtoolprovider-plugin</artifactId>
-                        <version>1.0.34</version>
                         <executions>
                            <!-- The command that actually generates the installer. The options for each platform
                             are found the /src/packaging directory. These files are copied into the target directory by

@@ -38,10 +38,13 @@
         <maven-resources.plugin.version>3.0.2</maven-resources.plugin.version>
         <maven-surefire.plugin.version>3.0.0-M5</maven-surefire.plugin.version>
         <maven-failsafe.plugin.version>3.0.0-M5</maven-failsafe.plugin.version>
+        <maven-shade.plugin.version>3.2.4</maven-shade.plugin.version>
 
         <javafx.plugin.version>0.0.6</javafx.plugin.version>
         <sass.plugin.version>3.7.2</sass.plugin.version>
         <maven-build-helper.plugin.version>3.2.0</maven-build-helper.plugin.version>
+        <moditect.plugin.version>1.0.0.Beta2</moditect.plugin.version>
+        <jtoolprovider.plugin.version>1.0.34</jtoolprovider.plugin.version>
 
         <!-- Other -->
 
@@ -162,6 +165,11 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>${maven-shade.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven-surefire.plugin.version}</version>
                 </plugin>
@@ -184,6 +192,16 @@
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
                     <version>${maven-build-helper.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.moditect</groupId>
+                    <artifactId>moditect-maven-plugin</artifactId>
+                    <version>${moditect.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>io.github.wiverson</groupId>
+                    <artifactId>jtoolprovider-plugin</artifactId>
+                    <version>${jtoolprovider.plugin.version}</version>
                 </plugin>
            </plugins>
         </pluginManagement>
