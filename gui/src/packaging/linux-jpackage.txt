@@ -2,7 +2,6 @@
 --app-version ${app.version}
 --icon ${project.basedir}/app-icon.icns
 --module ${main-class}
---type dmg
 --runtime-image ${project.build.directory}/gui
 --dest ${project.build.directory}
 --temp ${project.build.directory}/installer-work
