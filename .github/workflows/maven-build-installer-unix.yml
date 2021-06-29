@@ -29,4 +29,4 @@ jobs:
         automatic_release_tag: "Ubuntu-latest"
         prerelease: true
         title: "Ubuntu Development Build"
-        files: ./target/*.deb
+        files: ./gui/target/*.deb
