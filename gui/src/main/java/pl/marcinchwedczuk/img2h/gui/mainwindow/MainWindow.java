@@ -325,12 +325,12 @@ public class MainWindow implements Initializable {
     }
 
     @FXML
-    private void guiCrop(ActionEvent actionEvent) {
+    private void guiCrop() {
         runTransformation();
     }
 
     @FXML
-    private void guiResize(ActionEvent actionEvent) {
+    private void guiResize() {
         runTransformation();
     }
 

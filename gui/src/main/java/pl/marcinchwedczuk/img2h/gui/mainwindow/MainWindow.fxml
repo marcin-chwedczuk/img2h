@@ -39,12 +39,12 @@
                     <items>
                         <MenuItem onAction="#guiOpenImage" text="_Open Image...">
                      <accelerator>
-                        <KeyCodeCombination alt="UP" code="O" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                        <KeyCodeCombination alt="UP" code="O" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
                      </accelerator>
                         </MenuItem>
                         <MenuItem onAction="#guiSaveHeader" text="_Save Header...">
                      <accelerator>
-                        <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                        <KeyCodeCombination alt="UP" code="S" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
                      </accelerator>
                         </MenuItem>
                         <SeparatorMenuItem mnemonicParsing="false" />
