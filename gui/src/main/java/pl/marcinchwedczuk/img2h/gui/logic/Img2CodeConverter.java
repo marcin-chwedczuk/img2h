@@ -42,13 +42,18 @@ public class Img2CodeConverter {
                 }
 
                 append8Bits(headerFile, bits, format);
-                headerFile.append(", ");
+                if (maxIndex == image.getWidth()) {
+                    headerFile.append(",");
+                }
+                else {
+                    headerFile.append(", ");
+                }
             }
         }
 
-        // Remove last ', ' before closing '}'
-        if (headerFile.length() > 2 && headerFile.substring(headerFile.length()-2).equals(", ")) {
-            headerFile.replace(headerFile.length()-2, headerFile.length(), "");
+        // Remove last ',' before closing '}'
+        if (headerFile.length() > 1 && headerFile.substring(headerFile.length()-1).equals(",")) {
+            headerFile.replace(headerFile.length()-1, headerFile.length(), "");
         }
 
         finishPixelsArrayDeclaration(headerFile);

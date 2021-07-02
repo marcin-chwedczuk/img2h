@@ -65,7 +65,8 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <!-- Modularized dependencies, see ./modularized directory for details -->
+            <!-- Modularized dependencies with FAKE versions,
+                 see ./modularized directory for details -->
             <dependency>
                 <groupId>pl.marcinchwedczuk.img2h</groupId>
                 <artifactId>guava</artifactId>

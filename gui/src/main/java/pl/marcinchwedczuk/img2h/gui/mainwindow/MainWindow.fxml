@@ -35,14 +35,14 @@
     <top>
         <MenuBar fx:id="mainMenu" BorderPane.alignment="CENTER">
             <menus>
-                <Menu text="_File">
+                <Menu fx:id="fileMenu" text="_File">
                     <items>
-                        <MenuItem onAction="#guiOpenImage" text="_Open Image...">
-                     <accelerator>
-                        <KeyCodeCombination alt="UP" code="O" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
-                     </accelerator>
+                        <MenuItem fx:id="openMenuItem" onAction="#guiOpenImage" text="_Open Image...">
+                         <accelerator>
+                            <KeyCodeCombination alt="UP" code="O" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
+                         </accelerator>
                         </MenuItem>
-                        <MenuItem onAction="#guiSaveHeader" text="_Save Header...">
+                        <MenuItem fx:id="saveMenuItem" onAction="#guiSaveHeader" text="_Save Header...">
                      <accelerator>
                         <KeyCodeCombination alt="UP" code="S" control="UP" meta="UP" shift="UP" shortcut="DOWN" />
                      </accelerator>

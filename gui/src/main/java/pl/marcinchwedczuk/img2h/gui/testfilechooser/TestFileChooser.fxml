@@ -27,7 +27,7 @@
       <TextField fx:id="filePath" GridPane.columnIndex="1" />
       <HBox alignment="CENTER_RIGHT" spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
          <children>
-            <Button defaultButton="true" mnemonicParsing="false" onAction="#selectFile" text="Select" />
+            <Button fx:id="selectButton" defaultButton="true" mnemonicParsing="false" onAction="#selectFile" text="Select" />
             <Button cancelButton="true" mnemonicParsing="false" onAction="#cancel" text="Cancel" />
          </children>
       </HBox>

@@ -125,7 +125,7 @@ public class MainWindow implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        if (OsUtils.isMac()) {
+        if (OsUtils.isMac() && !App.testMode) {
             mainMenu.setUseSystemMenuBar(true);
             // MacOS will add Quit menu entry automatically
             removeMenuItem(closeMenuItem);
@@ -208,7 +208,7 @@ public class MainWindow implements Initializable {
         if (headerFile != null) {
             String header = convertImageToHeader();
             Files.writeString(headerFile.toPath(), header,
-                    StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+                    StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
         }
     }
 
