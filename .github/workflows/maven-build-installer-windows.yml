@@ -28,17 +28,19 @@ jobs:
       with:
         pathSource: wix311-binaries.zip
         pathTarget: ./target/wix
-    - name: Add Wix to Path
+    - name: "Add Wix to Path"
       run: echo "$HOME/target/wix" >> $GITHUB_PATH
     - uses: actions/checkout@v2
-    - name: Set up JDK 16
+    - name: "Set up JDK 16"
       uses: actions/setup-java@v1
       with:
         java-version: 16
         distribution: 'adopt'
-    - name: Build with Maven
+    - name: "Modularize dependencies"
+      run: ./build-modularized-version-of-dependencies.sh
+    - name: "Build with Maven"
       run: ./mvnw -B clean install -P mkinstaller
-    - name: Update Automatic Release
+    - name: "Update Automatic Release"
       uses: marvinpinto/action-automatic-releases@latest
       with:
         repo_token: "${{secrets.GITHUB_TOKEN}}"

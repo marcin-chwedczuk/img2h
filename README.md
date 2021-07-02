@@ -53,6 +53,10 @@ TODO
 
 You need JDK 16 or newer to compile and run this application.
 ```
+# This will add module-info to dependencies that are not fully
+# JPMS compliant, like e.g. Guava.
+./build-modularized-version-of-dependencies.sh
+
 ./mvnw clean package
 ./mvnw javafx:run -pl gui
 ```

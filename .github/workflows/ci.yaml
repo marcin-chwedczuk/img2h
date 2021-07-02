@@ -22,6 +22,8 @@ jobs:
         with:
           java-version: '16'
           distribution: 'adopt'
+      - name: "Modularize dependencies"
+        run: ./build-modularized-version-of-dependencies.sh
       - name: "Build and run unit-tests with Maven"
         run: ./mvnw --batch-mode --update-snapshots clean verify package
       - name: "Run integration tests with Maven"
