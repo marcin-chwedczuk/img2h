@@ -1,5 +1,6 @@
 package pl.marcinchwedczuk.img2h.gui.aboutdialog;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -8,6 +9,7 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import pl.marcinchwedczuk.img2h.gui.App;
 
 import java.io.IOException;
 
@@ -39,5 +41,10 @@ public class AboutDialog {
     @FXML
     private void guiClose() {
         ((Stage)rootElement.getScene().getWindow()).close();
+    }
+
+    @FXML
+    private void openLennsanTumblr() {
+        App.hostServices().showDocument("https://lennsan.tumblr.com");
     }
 }

@@ -57,7 +57,8 @@
                </image>
             </ImageView>
             <Label layoutX="333.0" layoutY="17.0" text="MIT License" AnchorPane.rightAnchor="6.0" />
-            <Hyperlink layoutX="220.0" layoutY="54.0" text="PixelArt by  lennsan.tumblr.com" AnchorPane.rightAnchor="2.0" />
+            <Hyperlink layoutX="220.0" layoutY="54.0" text="PixelArt by  lennsan.tumblr.com"
+                       AnchorPane.rightAnchor="2.0" onAction="#openLennsanTumblr"/>
          </children>
       </AnchorPane>
    </children>
