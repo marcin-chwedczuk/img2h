@@ -26,7 +26,7 @@ public class WaitDialog implements Initializable {
 
             Stage childWindow = new Stage();
             childWindow.initOwner(owner);
-            childWindow.initModality(Modality.APPLICATION_MODAL);
+            childWindow.initModality(Modality.WINDOW_MODAL);
             childWindow.setTitle("Please wait...");
             childWindow.setScene(new Scene(loader.load()));
             childWindow.setResizable(false);

@@ -2,7 +2,6 @@ package pl.marcinchwedczuk.img2h.gui.mainwindow;
 
 import javafx.beans.binding.Bindings;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -18,11 +17,13 @@ import javafx.stage.Stage;
 import org.apache.commons.imaging.ImageFormat;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.Imaging;
+import pl.marcinchwedczuk.img2h.gui.App;
 import pl.marcinchwedczuk.img2h.gui.OsUtils;
 import pl.marcinchwedczuk.img2h.gui.UiService;
 import pl.marcinchwedczuk.img2h.gui.aboutdialog.AboutDialog;
 import pl.marcinchwedczuk.img2h.gui.codewindow.CodeWindow;
 import pl.marcinchwedczuk.img2h.gui.logic.*;
+import pl.marcinchwedczuk.img2h.gui.testfilechooser.TestFileChooser;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -190,7 +191,9 @@ public class MainWindow implements Initializable {
 
     @FXML
     private void guiOpenImage() {
-        File file = openImageFileChooser.showOpenDialog(thisWindow());
+        File file = App.testMode
+            ? TestFileChooser.showSelectFilePathDialog(thisWindow())
+            : openImageFileChooser.showOpenDialog(thisWindow());
         if (file != null) {
             loadImage(file);
             runTransformation();
@@ -199,7 +202,9 @@ public class MainWindow implements Initializable {
 
     @FXML
     private void guiSaveHeader() throws IOException {
-        File headerFile = saveHeaderFileChooser.showSaveDialog(thisWindow());
+        File headerFile = App.testMode
+            ? TestFileChooser.showSelectFilePathDialog(thisWindow())
+            : saveHeaderFileChooser.showSaveDialog(thisWindow());
         if (headerFile != null) {
             String header = convertImageToHeader();
             Files.writeString(headerFile.toPath(), header,

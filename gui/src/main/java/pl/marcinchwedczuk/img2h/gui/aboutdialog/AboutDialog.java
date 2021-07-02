@@ -21,7 +21,7 @@ public class AboutDialog {
 
             Stage childWindow = new Stage();
             childWindow.initOwner(owner);
-            childWindow.initModality(Modality.APPLICATION_MODAL);
+            childWindow.initModality(Modality.WINDOW_MODAL);
             childWindow.setTitle("About...");
             childWindow.setScene(new Scene(loader.load()));
             childWindow.setResizable(false);

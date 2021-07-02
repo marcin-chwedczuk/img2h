@@ -14,10 +14,12 @@ module pl.marcinchwedczuk.img2h.gui {
     exports pl.marcinchwedczuk.img2h.gui.waitdialog;
     exports pl.marcinchwedczuk.img2h.gui.codewindow;
     exports pl.marcinchwedczuk.img2h.gui.aboutdialog;
+    exports pl.marcinchwedczuk.img2h.gui.testfilechooser;
 
     // Allow @FXML injection to private fields.
     opens pl.marcinchwedczuk.img2h.gui.mainwindow;
     opens pl.marcinchwedczuk.img2h.gui.waitdialog;
     opens pl.marcinchwedczuk.img2h.gui.codewindow;
     opens pl.marcinchwedczuk.img2h.gui.aboutdialog;
+    opens pl.marcinchwedczuk.img2h.gui.testfilechooser;
 }

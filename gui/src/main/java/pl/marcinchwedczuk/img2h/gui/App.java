@@ -11,6 +11,8 @@ import java.util.concurrent.Executors;
  * JavaFX App
  */
 public class App extends Application {
+    public static boolean testMode = false;
+
     private static HostServices hostServices = null;
     public static HostServices hostServices() {
         if (hostServices == null) {
