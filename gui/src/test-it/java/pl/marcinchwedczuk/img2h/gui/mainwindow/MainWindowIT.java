@@ -18,6 +18,9 @@ public class MainWindowIT {
 
     @BeforeEach
     public void setup() throws Exception {
+        // See: https://github.com/TestFX/Monocle/issues/14
+        System.setProperty("headless.geometry", "1600x1200-32");
+
         App.testMode = true;
         ApplicationTest.launch(App.class);
     }
