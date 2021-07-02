@@ -66,7 +66,7 @@ public class MainWindowIT {
         Files.delete(testImage);
 
         // Check if data is correct
-        assertThat(createdHeader)
+        assertThat(createdHeader + "x")
                 .isEqualTo(expectedHeader);
     }
 
