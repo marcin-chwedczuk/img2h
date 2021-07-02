@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 import org.apache.commons.imaging.ImageFormat;
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.Imaging;
+import pl.marcinchwedczuk.img2h.gui.OsUtils;
 import pl.marcinchwedczuk.img2h.gui.UiService;
 import pl.marcinchwedczuk.img2h.gui.aboutdialog.AboutDialog;
 import pl.marcinchwedczuk.img2h.gui.codewindow.CodeWindow;
@@ -35,7 +36,6 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 public class MainWindow implements Initializable {
-
 
     public static MainWindow showOn(Stage window) {
         try {
@@ -55,6 +55,12 @@ public class MainWindow implements Initializable {
             throw new RuntimeException(e);
         }
     }
+
+    @FXML
+    private MenuBar mainMenu;
+
+    @FXML
+    private MenuItem closeMenuItem;
 
     @FXML
     private ImageView originalImageView;
@@ -118,6 +124,12 @@ public class MainWindow implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        if (OsUtils.isMac()) {
+            mainMenu.setUseSystemMenuBar(true);
+            // MacOS will add Quit menu entry automatically
+            removeMenuItem(closeMenuItem);
+        }
+
         bwAlgoChoice.getItems().addAll(BlackWhiteConversionAlgorithm.values());
         bwAlgoChoice.setValue(BlackWhiteConversionAlgorithm.DITHERING);
 
@@ -365,5 +377,9 @@ public class MainWindow implements Initializable {
 
     private Stage thisWindow() {
         return (Stage)this.bwAlgoChoice.getScene().getWindow();
+    }
+
+    private static void removeMenuItem(MenuItem menuItem) {
+        menuItem.getParentMenu().getItems().remove(menuItem);
     }
 }

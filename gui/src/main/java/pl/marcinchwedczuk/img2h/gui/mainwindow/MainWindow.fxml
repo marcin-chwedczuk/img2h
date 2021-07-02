@@ -33,7 +33,7 @@
     <children>
     </children>
     <top>
-        <MenuBar BorderPane.alignment="CENTER">
+        <MenuBar fx:id="mainMenu" BorderPane.alignment="CENTER">
             <menus>
                 <Menu text="_File">
                     <items>
@@ -48,7 +48,7 @@
                      </accelerator>
                         </MenuItem>
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem onAction="#guiClose" text="E_xit" />
+                        <MenuItem fx:id="closeMenuItem" onAction="#guiClose" text="E_xit" />
                     </items>
                 </Menu>
                 <Menu text="_Help">
