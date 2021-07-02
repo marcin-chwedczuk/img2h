@@ -34,9 +34,14 @@
     </properties>
 
     <dependencies>
+        <!-- modularized -->
         <dependency>
             <groupId>pl.marcinchwedczuk.img2h</groupId>
-            <artifactId>gui-nonmodular-dependencies</artifactId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>pl.marcinchwedczuk.img2h</groupId>
+            <artifactId>commons-imaging</artifactId>
         </dependency>
 
         <!-- External -->
@@ -55,10 +60,6 @@
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-graphics</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-swing</artifactId>
         </dependency>
 
         <!-- Test dependencies -->
@@ -200,6 +201,10 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>dev-build</id>
+        </profile>
+
         <profile>
             <id>mkinstaller</id>
             <activation>

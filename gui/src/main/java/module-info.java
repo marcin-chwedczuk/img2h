@@ -5,8 +5,9 @@ module pl.marcinchwedczuk.img2h.gui {
     requires javafx.swing;
     requires java.desktop;
 
-    // Shaded non-modular dependencies with synthetic module-info
-    requires gui.nonmodular.dependencies;
+    // forced to be modular - see ./modularized directory
+    requires _modularized_.com.google.common;
+    requires _modularized_.org.apache.commons.imaging;
 
     exports pl.marcinchwedczuk.img2h.gui;
     exports pl.marcinchwedczuk.img2h.gui.mainwindow;
