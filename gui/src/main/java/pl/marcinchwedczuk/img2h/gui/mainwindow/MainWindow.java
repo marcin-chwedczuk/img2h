@@ -16,6 +16,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.apache.commons.imaging.ImageFormat;
+import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.Imaging;
 import pl.marcinchwedczuk.img2h.gui.UiService;
 import pl.marcinchwedczuk.img2h.gui.aboutdialog.AboutDialog;
@@ -24,8 +25,7 @@ import pl.marcinchwedczuk.img2h.gui.logic.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -144,10 +144,8 @@ public class MainWindow implements Initializable {
 
         exportFormatChoice.setValue(ExportFormat.C_BITS_LITERAL);
 
-        loadImage(new File(getClass().getResource("default-image.png").getFile()));
-
+        loadDefaultImage();
         guiNokia5110SizePreset();
-        resizeAlgorithmChoice.setValue(ResizeAlgorithm.SMOOTH);
     }
 
     private void fastLcdImageZoom(double zoom) {
@@ -224,26 +222,42 @@ public class MainWindow implements Initializable {
     }
 
     private void loadImage(File imageFile) {
-        try {
-            ImageFormat format = Imaging.guessFormat(imageFile);
-            originalImage = ImageIO.read(imageFile);
+        try (FileInputStream is = new FileInputStream(imageFile)) {
+            byte[] imageBytes = is.readAllBytes();
+            loadImage(imageBytes);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            UiService.errorDialog(
+                    "Cannot open file: " + imageFile + ".\n" +
+                    "\nError: " + e.getMessage());
+        }
+    }
 
-            formatLabel.setText(format.toString());
-            originalWidthLabel.setText(originalImage.getWidth() + " px");
-            originalHeightLabel.setText(originalImage.getHeight() + " px");
-
-            Image image = SwingFXUtils.toFXImage(originalImage, null);
-            this.originalImageView.setImage(image);
-            this.originalImageView.setFitWidth(image.getWidth());
-            this.originalImageView.setFitHeight(image.getHeight());
-
-            bwAlgoChoice.setValue(BlackWhiteConversionAlgorithm.DITHERING);
-            bwThresholdSlider.setValue(50.0);
-
-        } catch (Exception e) {
-            UiService.errorDialog("Failure: " + e.getMessage());
+    private void loadDefaultImage() {
+        try(InputStream is = getClass().getResourceAsStream("default-image.png")) {
+            loadImage(is.readAllBytes());
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void loadImage(byte[] imageBytes) throws IOException, ImageReadException {
+        ImageFormat format = Imaging.guessFormat(imageBytes);
+        originalImage = ImageIO.read(new ByteArrayInputStream(imageBytes));
+
+        formatLabel.setText(format.toString());
+        originalWidthLabel.setText(originalImage.getWidth() + " px");
+        originalHeightLabel.setText(originalImage.getHeight() + " px");
+
+        Image image = SwingFXUtils.toFXImage(originalImage, null);
+        this.originalImageView.setImage(image);
+        this.originalImageView.setFitWidth(image.getWidth());
+        this.originalImageView.setFitHeight(image.getHeight());
+
+        bwAlgoChoice.setValue(BlackWhiteConversionAlgorithm.DITHERING);
+        bwThresholdSlider.setValue(50.0);
     }
 
     private void runTransformation() {
